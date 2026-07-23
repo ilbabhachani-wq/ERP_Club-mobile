@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/animations/odin_motion.dart';
 import '../../core/theme/odin_colors.dart';
-import '../../core/widgets/animated_particles.dart';
 import '../../services/onboarding_service.dart';
 import 'widgets/onboarding_illustrations.dart';
 
@@ -87,7 +86,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         fit: StackFit.expand,
         children: [
           const ParallaxOrbs(),
-          AnimatedParticles(count: 16, colors: [slide.accent, OdinColors.playerCoral]),
           SafeArea(
             child: Column(
               children: [
@@ -117,26 +115,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       final opacity = (1 - delta.abs()).clamp(0.0, 1.0);
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 28),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Transform.translate(
-                              offset: Offset(delta * 55, 0),
-                              child: SizedBox(
-                                height: 260,
-                                child: AnimatedSlideIllustration(
-                                  type: _slides[i].illustration,
-                                  accent: _slides[i].accent,
-                                  animate: delta.abs() < 0.5,
+                        child: Perspective3D(
+                          rotateY: delta * 0.9,
+                          depth: 0.0022,
+                          alignment: delta > 0 ? Alignment.centerLeft : Alignment.centerRight,
+                          child: Opacity(
+                            opacity: opacity,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  height: 260,
+                                  child: AnimatedSlideIllustration(
+                                    type: _slides[i].illustration,
+                                    accent: _slides[i].accent,
+                                    animate: delta.abs() < 0.5,
+                                  ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 36),
-                            Transform.translate(
-                              offset: Offset(delta * 110, 0),
-                              child: Opacity(
-                                opacity: opacity,
-                                child: Column(
+                                const SizedBox(height: 36),
+                                Column(
                                   children: [
                                     Text(
                                       _slides[i].title,
@@ -160,9 +157,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     ),
                                   ],
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       );
                     },

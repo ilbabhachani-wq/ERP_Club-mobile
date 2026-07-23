@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -5,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/animations/odin_motion.dart';
 import '../../core/theme/odin_colors.dart';
-import '../../core/widgets/animated_particles.dart';
 import '../../core/widgets/odin_logo.dart';
 import '../../providers/app_providers.dart';
 import '../../services/onboarding_service.dart';
@@ -25,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _progressCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2400));
+    _progressCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
     _progressCtrl.addListener(() {
       if (mounted) setState(() => _progress = _progressCtrl.value);
     });
@@ -38,15 +38,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     final auth = context.read<AuthProvider>();
     final joueurData = context.read<JoueurDataProvider>();
 
+    final minFloor = Future<void>.delayed(const Duration(seconds: 2));
     final results = await Future.wait([
       auth.init(),
-      Future<void>.delayed(const Duration(milliseconds: 2800)),
       _onboarding.isCompleted(),
     ]);
+    await minFloor;
 
     if (!mounted) return;
 
-    final onboardingDone = results[2] as bool;
+    final onboardingDone = results[1] as bool;
 
     if (auth.isAuthenticated && auth.user != null) {
       await joueurData.load(auth.user!);
@@ -77,27 +78,30 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         fit: StackFit.expand,
         children: [
           const ParallaxOrbs(),
-          const AnimatedParticles(count: 28),
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Hero(
-                  tag: kOdinLogoHeroTag,
-                  child: const Material(
-                    color: Colors.transparent,
-                    child: OdinLogo(width: 200, animated: false),
+                const SizedBox(
+                  width: 260,
+                  height: 260,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      _OrbitRing(),
+                      Flip3DReveal(
+                        child: Hero(
+                          tag: kOdinLogoHeroTag,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: OdinLogo(width: 200, animated: false),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                )
-                    .animate()
-                    .fadeIn(duration: 700.ms, curve: Curves.easeOut)
-                    .scale(
-                      begin: const Offset(0.85, 0.85),
-                      end: const Offset(1, 1),
-                      duration: 700.ms,
-                      curve: Curves.easeOutBack,
-                    ),
-                const SizedBox(height: 24),
+                ),
+                const SizedBox(height: 8),
                 Text(
                   'ODIN ERP',
                   style: GoogleFonts.inter(
@@ -108,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                 )
                     .animate()
-                    .fadeIn(delay: 280.ms, duration: 500.ms)
+                    .fadeIn(delay: 700.ms, duration: 500.ms)
                     .slideY(begin: 0.28, end: 0, curve: Curves.easeOutCubic),
                 const SizedBox(height: 8),
                 Text(
@@ -119,20 +123,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     color: OdinColors.textMuted,
                     letterSpacing: 1.2,
                   ),
-                ).animate().fadeIn(delay: 420.ms, duration: 500.ms),
+                ).animate().fadeIn(delay: 820.ms, duration: 500.ms),
                 const SizedBox(height: 48),
                 OdinShimmerProgress(progress: _progress)
                     .animate()
-                    .fadeIn(delay: 500.ms, duration: 400.ms),
-                const SizedBox(height: 12),
-                Text(
-                  'Chargement de votre espace…',
-                  style: GoogleFonts.inter(fontSize: 11, color: OdinColors.textMuted),
-                )
-                    .animate(onPlay: (c) => c.repeat())
-                    .fadeIn(duration: 800.ms)
-                    .then()
-                    .fadeOut(duration: 800.ms),
+                    .fadeIn(delay: 900.ms, duration: 400.ms),
               ],
             ),
           ),
@@ -149,10 +144,92 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 color: OdinColors.textMuted.withValues(alpha: 0.5),
                 letterSpacing: 2,
               ),
-            ).animate().fadeIn(delay: 1000.ms, duration: 600.ms),
+            ).animate().fadeIn(delay: 1200.ms, duration: 600.ms),
           ),
         ],
       ),
     );
   }
+}
+
+/// Anneau orbital décoratif derrière le logo — tilt 3D fixe + rotation lente
+/// d'un arc lumineux, seul élément en boucle continue de l'écran.
+class _OrbitRing extends StatefulWidget {
+  const _OrbitRing();
+
+  @override
+  State<_OrbitRing> createState() => _OrbitRingState();
+}
+
+class _OrbitRingState extends State<_OrbitRing> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Perspective3D(
+      rotateX: 1.15,
+      depth: 0.003,
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (_, __) {
+          return Transform.rotate(
+            angle: _ctrl.value * math.pi * 2,
+            child: CustomPaint(
+              size: const Size(260, 260),
+              painter: _RingPainter(),
+            ),
+          );
+        },
+      ),
+    ).animate().fadeIn(delay: 200.ms, duration: 800.ms);
+  }
+}
+
+class _RingPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 6;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = OdinColors.accent.withValues(alpha: 0.12)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+
+    canvas.drawArc(
+      rect,
+      -math.pi / 2,
+      math.pi / 2.2,
+      false,
+      Paint()
+        ..shader = SweepGradient(
+          startAngle: -math.pi / 2,
+          endAngle: -math.pi / 2 + math.pi / 2.2,
+          colors: [Colors.transparent, OdinColors.accent.withValues(alpha: 0.85)],
+        ).createShader(rect)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _RingPainter old) => false;
 }

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../core/animations/odin_animations.dart';
 import '../../core/animations/odin_motion.dart';
 import '../../core/theme/odin_colors.dart';
-import '../../core/widgets/fifa_player_card.dart';
 import '../../core/widgets/fifa_card_utils.dart';
 import '../../core/widgets/odin_widgets.dart';
 import '../../providers/app_providers.dart';
@@ -129,22 +128,53 @@ class JoueurDashboardScreen extends StatelessWidget {
               const SizedBox(height: 12),
               const SectionTitle('Récompenses'),
               SizedBox(
-                height: 90,
+                height: 124,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: data.awards.take(5).length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
                   itemBuilder: (_, i) {
                     final a = data.awards[i];
-                    return GlassCard(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(a.icon, style: const TextStyle(fontSize: 24)),
-                          const SizedBox(height: 4),
-                          Text(a.title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                        ],
+                    final color = _hexColor(a.color);
+                    return SizedBox(
+                      width: 108,
+                      child: GlassCard(
+                        accentColor: color,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: [color.withValues(alpha: 0.22), color.withValues(alpha: 0.08)],
+                                ),
+                                border: Border.all(color: color.withValues(alpha: 0.25)),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(a.icon, style: const TextStyle(fontSize: 16)),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              a.title,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, height: 1.2),
+                            ),
+                            if (a.season.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                a.season,
+                                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: OdinColors.textMuted),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -155,6 +185,11 @@ class JoueurDashboardScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static Color _hexColor(String hex) {
+    final clean = hex.replaceFirst('#', '');
+    return Color(int.parse('FF$clean', radix: 16));
   }
 
   static Color _loadColor(int load) {
@@ -221,122 +256,100 @@ class _HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const cardWidth = 210.0;
+    final attr = getFifaAttributes(player.radar);
 
     return OdinAnimations.fadeUp(
       GlassCard(
-        padding: EdgeInsets.zero,
         raised: true,
-        accentColor: OdinColors.playerCoral,
-        clipContent: false,
+        accentColor: OdinColors.accent,
+        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    OdinColors.playerCoral.withValues(alpha: 0.14),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-              child: FifaCardShowcase(
-                height: cardWidth * 1.5 + 36,
-                child: Hero(
-                  tag: kFifaCardHeroTag,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: FifaPlayerCard(
-                      width: cardWidth,
-                      name: player.name,
-                      position: player.position,
-                      ovr: player.ovr,
-                      age: player.age,
-                      radar: player.radar,
-                      number: player.jerseyNumber != null ? '${player.jerseyNumber}' : '—',
-                      nationality: player.nationality ?? '',
-                      flag: nationalityFlag(player.nationality),
-                      club: club,
-                      photoUrl: player.photoUrl,
-                      badge: stats != null && stats.form >= 75 ? '🔥 FORME' : null,
-                    )
-                        .animate()
-                        .fadeIn(duration: 500.ms)
-                        .scale(
-                          begin: const Offset(0.82, 0.82),
-                          end: const Offset(1, 1),
-                          duration: 700.ms,
-                          curve: Curves.easeOutBack,
-                        )
-                        .rotate(begin: -0.04, end: 0, duration: 700.ms, curve: Curves.easeOutCubic)
-                        .then()
-                        .shimmer(duration: 900.ms, color: Colors.white24),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-              child: Column(
-                children: [
-                  if (stats != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 8,
-                        runSpacing: 8,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Avatar(photoUrl: player.photoUrl, initials: getInitials(player.name)),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        player.name,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, height: 1.1),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
                         children: [
-                          _pill(
-                            stats.form >= 80
-                                ? '🔥 Forme excellente'
-                                : stats.form >= 65
-                                    ? '📈 Bonne forme'
-                                    : '📉 Forme à améliorer',
-                            stats.form >= 75 ? OdinColors.playerCoral : OdinColors.warning,
-                          ),
-                          _pill('${stats.form}% forme', OdinColors.success),
+                          _chip('${player.position} · #${player.jerseyNumber ?? '—'}'),
+                          _chip(club),
+                          _chip(league),
                         ],
                       ),
-                    ),
-                  Text(
-                    'SAISON ${DateTime.now().year - 1}-${DateTime.now().year.toString().substring(2)} · ${player.position}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: OdinColors.playerCoral,
-                      letterSpacing: 1.4,
-                    ),
+                      if (stats != null) ...[
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _pill(
+                              stats.form >= 80
+                                  ? '🔥 Forme excellente'
+                                  : stats.form >= 65
+                                      ? '📈 Bonne forme'
+                                      : '📉 Forme à améliorer',
+                              stats.form >= 75 ? OdinColors.accent : OdinColors.warning,
+                            ),
+                            _pill('${stats.form}% forme', OdinColors.success),
+                          ],
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    player.name,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, height: 1.1),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${nationalityFlag(player.nationality)} ${player.nationality ?? ''} · $club',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
-                  ),
-                  Text(
-                    league,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 11),
-                  ),
+                ),
+                const SizedBox(width: 12),
+                OvrRing(ovr: player.ovr, size: 64, color: OdinColors.accent),
+              ],
+            ),
+            const SizedBox(height: 20),
+            SectionTitle('Profil de performance', color: OdinColors.accent),
+            Center(
+              child: AnimatedRadarDraw(
+                values: [
+                  attr.pac.toDouble(),
+                  attr.sho.toDouble(),
+                  attr.pas.toDouble(),
+                  attr.dri.toDouble(),
+                  attr.def.toDouble(),
+                  attr.phy.toDouble(),
                 ],
+                labels: const ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'],
+                color: OdinColors.accent,
+                size: 200,
               ),
             ),
           ],
         ),
       ),
       index: 0,
+    );
+  }
+
+  static Widget _chip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: OdinColors.panelBorder),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: OdinColors.textSecondary),
+      ),
     );
   }
 
@@ -350,11 +363,61 @@ class _HeroSection extends StatelessWidget {
       ),
       child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 11)),
     );
-    if (text.contains('excellente') || text.contains('FORME')) {
+    if (text.contains('excellente')) {
       return pill
           .animate(onPlay: (c) => c.repeat(reverse: true))
           .scaleXY(begin: 1, end: 1.04, duration: 1200.ms, curve: Curves.easeInOut);
     }
     return pill;
+  }
+}
+
+class _Avatar extends StatefulWidget {
+  const _Avatar({required this.photoUrl, required this.initials});
+
+  final String? photoUrl;
+  final String initials;
+
+  @override
+  State<_Avatar> createState() => _AvatarState();
+}
+
+class _AvatarState extends State<_Avatar> {
+  bool _failed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final showPhoto = widget.photoUrl != null && widget.photoUrl!.isNotEmpty && !_failed;
+    return Container(
+      width: 72,
+      height: 72,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(colors: [OdinColors.accent, OdinColors.accentStrong]),
+        border: Border.all(color: OdinColors.panelBorder, width: 2),
+      ),
+      child: showPhoto
+          ? Image.network(
+              widget.photoUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) setState(() => _failed = true);
+                });
+                return _initialsFallback();
+              },
+            )
+          : _initialsFallback(),
+    );
+  }
+
+  Widget _initialsFallback() {
+    return Center(
+      child: Text(
+        widget.initials,
+        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white),
+      ),
+    );
   }
 }
