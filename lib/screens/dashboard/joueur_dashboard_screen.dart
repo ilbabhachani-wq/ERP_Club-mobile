@@ -5,6 +5,7 @@ import '../../core/animations/odin_animations.dart';
 import '../../core/animations/odin_motion.dart';
 import '../../core/theme/odin_colors.dart';
 import '../../core/widgets/fifa_card_utils.dart';
+import '../../core/widgets/fifa_player_card.dart';
 import '../../core/widgets/odin_widgets.dart';
 import '../../providers/app_providers.dart';
 
@@ -156,7 +157,7 @@ class JoueurDashboardScreen extends StatelessWidget {
                                 border: Border.all(color: color.withValues(alpha: 0.25)),
                               ),
                               alignment: Alignment.center,
-                              child: Text(a.icon, style: const TextStyle(fontSize: 16)),
+                              child: Icon(_awardIcon(a), size: 18, color: color),
                             ),
                             const SizedBox(height: 6),
                             Text(
@@ -185,6 +186,32 @@ class JoueurDashboardScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static IconData _awardIcon(dynamic a) {
+    final icon = (a.icon as String? ?? '');
+    final type = (a.awardType as String? ?? '').toLowerCase();
+    final title = (a.title as String? ?? '').toLowerCase();
+
+    if (icon.contains('🥇') || icon.contains('🏅') || type.contains('mvp') || title.contains('mois')) {
+      return Icons.military_tech_rounded;
+    }
+    if (icon.contains('⚽') || title.contains('buteur') || title.contains('but')) {
+      return Icons.sports_soccer_rounded;
+    }
+    if (icon.contains('🤝') || title.contains('fair-play') || title.contains('fair play')) {
+      return Icons.handshake_rounded;
+    }
+    if (icon.contains('🎯') || title.contains('passe')) {
+      return Icons.gps_fixed_rounded;
+    }
+    if (icon.contains('🛡') || title.contains('défense') || title.contains('defense')) {
+      return Icons.shield_rounded;
+    }
+    if (icon.contains('⭐') || icon.contains('🌟') || title.contains('sélection') || title.contains('selection')) {
+      return Icons.star_rounded;
+    }
+    return Icons.emoji_events_rounded;
   }
 
   static Color _hexColor(String hex) {
@@ -256,100 +283,122 @@ class _HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final attr = getFifaAttributes(player.radar);
+    const cardWidth = 210.0;
 
     return OdinAnimations.fadeUp(
       GlassCard(
+        padding: EdgeInsets.zero,
         raised: true,
-        accentColor: OdinColors.accent,
-        padding: const EdgeInsets.all(20),
+        accentColor: OdinColors.playerCoral,
+        clipContent: false,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Avatar(photoUrl: player.photoUrl, initials: getInitials(player.name)),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        player.name,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, height: 1.1),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          _chip('${player.position} · #${player.jerseyNumber ?? '—'}'),
-                          _chip(club),
-                          _chip(league),
-                        ],
-                      ),
-                      if (stats != null) ...[
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            _pill(
-                              stats.form >= 80
-                                  ? '🔥 Forme excellente'
-                                  : stats.form >= 65
-                                      ? '📈 Bonne forme'
-                                      : '📉 Forme à améliorer',
-                              stats.form >= 75 ? OdinColors.accent : OdinColors.warning,
-                            ),
-                            _pill('${stats.form}% forme', OdinColors.success),
-                          ],
-                        ),
-                      ],
-                    ],
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    OdinColors.playerCoral.withValues(alpha: 0.14),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: FifaCardShowcase(
+                height: cardWidth * 1.5 + 36,
+                child: Hero(
+                  tag: kFifaCardHeroTag,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: FifaPlayerCard(
+                      width: cardWidth,
+                      name: player.name,
+                      position: player.position,
+                      ovr: player.ovr,
+                      age: player.age,
+                      radar: player.radar,
+                      number: player.jerseyNumber != null ? '${player.jerseyNumber}' : '—',
+                      nationality: player.nationality ?? '',
+                      flag: nationalityFlag(player.nationality),
+                      club: club,
+                      photoUrl: player.photoUrl,
+                      badge: stats != null && stats.form >= 75 ? '🔥 FORME' : null,
+                    )
+                        .animate()
+                        .fadeIn(duration: 500.ms)
+                        .scale(
+                          begin: const Offset(0.82, 0.82),
+                          end: const Offset(1, 1),
+                          duration: 700.ms,
+                          curve: Curves.easeOutBack,
+                        )
+                        .rotate(begin: -0.04, end: 0, duration: 700.ms, curve: Curves.easeOutCubic)
+                        .then()
+                        .shimmer(duration: 900.ms, color: Colors.white24),
                   ),
                 ),
-                const SizedBox(width: 12),
-                OvrRing(ovr: player.ovr, size: 64, color: OdinColors.accent),
-              ],
+              ),
             ),
-            const SizedBox(height: 20),
-            SectionTitle('Profil de performance', color: OdinColors.accent),
-            Center(
-              child: AnimatedRadarDraw(
-                values: [
-                  attr.pac.toDouble(),
-                  attr.sho.toDouble(),
-                  attr.pas.toDouble(),
-                  attr.dri.toDouble(),
-                  attr.def.toDouble(),
-                  attr.phy.toDouble(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+              child: Column(
+                children: [
+                  if (stats != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _pill(
+                            stats.form >= 80
+                                ? '🔥 Forme excellente'
+                                : stats.form >= 65
+                                    ? '📈 Bonne forme'
+                                    : '📉 Forme à améliorer',
+                            stats.form >= 75 ? OdinColors.playerCoral : OdinColors.warning,
+                          ),
+                          _pill('${stats.form}% forme', OdinColors.success),
+                        ],
+                      ),
+                    ),
+                  Text(
+                    'SAISON ${DateTime.now().year - 1}-${DateTime.now().year.toString().substring(2)} · ${player.position}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: OdinColors.playerCoral,
+                      letterSpacing: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    player.name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, height: 1.1),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${nationalityFlag(player.nationality)} ${player.nationality ?? ''} · $club',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                  ),
+                  Text(
+                    league,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 11),
+                  ),
                 ],
-                labels: const ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'],
-                color: OdinColors.accent,
-                size: 200,
               ),
             ),
           ],
         ),
       ),
       index: 0,
-    );
-  }
-
-  static Widget _chip(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: OdinColors.panelBorder),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: OdinColors.textSecondary),
-      ),
     );
   }
 
@@ -363,61 +412,11 @@ class _HeroSection extends StatelessWidget {
       ),
       child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 11)),
     );
-    if (text.contains('excellente')) {
+    if (text.contains('excellente') || text.contains('FORME')) {
       return pill
           .animate(onPlay: (c) => c.repeat(reverse: true))
           .scaleXY(begin: 1, end: 1.04, duration: 1200.ms, curve: Curves.easeInOut);
     }
     return pill;
-  }
-}
-
-class _Avatar extends StatefulWidget {
-  const _Avatar({required this.photoUrl, required this.initials});
-
-  final String? photoUrl;
-  final String initials;
-
-  @override
-  State<_Avatar> createState() => _AvatarState();
-}
-
-class _AvatarState extends State<_Avatar> {
-  bool _failed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final showPhoto = widget.photoUrl != null && widget.photoUrl!.isNotEmpty && !_failed;
-    return Container(
-      width: 72,
-      height: 72,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(colors: [OdinColors.accent, OdinColors.accentStrong]),
-        border: Border.all(color: OdinColors.panelBorder, width: 2),
-      ),
-      child: showPhoto
-          ? Image.network(
-              widget.photoUrl!,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) setState(() => _failed = true);
-                });
-                return _initialsFallback();
-              },
-            )
-          : _initialsFallback(),
-    );
-  }
-
-  Widget _initialsFallback() {
-    return Center(
-      child: Text(
-        widget.initials,
-        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white),
-      ),
-    );
   }
 }

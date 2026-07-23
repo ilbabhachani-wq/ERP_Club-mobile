@@ -29,7 +29,7 @@ class JoueurPerformancesScreen extends StatelessWidget {
       radar.passing.toDouble(),
       radar.shooting.toDouble(),
       radar.physical.toDouble(),
-      radar.vision.toDouble(),
+      ((radar.vision + radar.speed) / 2),
       radar.defending.toDouble(),
     ];
 
@@ -119,56 +119,81 @@ class JoueurPerformancesScreen extends StatelessWidget {
               ),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, i) {
-                  final m = data.matchStats.take(10).toList()[i];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: OdinAnimations.fadeUp(
-                      GlassCard(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: _ratingColor(m.rating).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                m.rating.toStringAsFixed(1),
-                                style: TextStyle(fontWeight: FontWeight.w900, color: _ratingColor(m.rating)),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('vs ${m.opponent}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                                  Text(
-                                    '${m.result} · ${m.goals}G ${m.assists}P · ${m.minutes}\'',
-                                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+          if (data.matchStats.isEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+              sliver: SliverToBoxAdapter(
+                child: GlassCard(
+                  padding: const EdgeInsets.symmetric(vertical: 28),
+                  child: Column(
+                    children: [
+                      Icon(Icons.bar_chart_rounded, color: OdinColors.textMuted.withValues(alpha: 0.5), size: 28),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Aucune note de match pour le moment',
+                        style: TextStyle(color: OdinColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600),
                       ),
-                      index: i,
-                    ),
-                  );
-                },
-                childCount: data.matchStats.take(10).length,
+                    ],
+                  ),
+                ),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) {
+                    final m = data.matchStats.take(10).toList()[i];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: OdinAnimations.fadeUp(
+                        GlassCard(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: _ratingColor(m.rating).withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  m.rating.toStringAsFixed(1),
+                                  style: TextStyle(fontWeight: FontWeight.w900, color: _ratingColor(m.rating)),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('vs ${m.opponent}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                                    Text(
+                                      '${m.result} · ${m.goals}G ${m.assists}P · ${m.minutes}\'',
+                                      style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (m.matchDate.isNotEmpty)
+                                Text(
+                                  m.matchDate,
+                                  style: const TextStyle(color: OdinColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600),
+                                ),
+                            ],
+                          ),
+                        ),
+                        index: i,
+                      ),
+                    );
+                  },
+                  childCount: data.matchStats.take(10).length,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
