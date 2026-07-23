@@ -1,395 +1,41 @@
-import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../animations/odin_animations.dart';
 import '../theme/odin_colors.dart';
 
-/// Fond login web — aurora conique + grille masquée (login-aurora / login-grid).
-class LoginBackdrop extends StatefulWidget {
-  const LoginBackdrop({super.key, required this.child});
-
-  final Widget child;
-
-  @override
-  State<LoginBackdrop> createState() => _LoginBackdropState();
-}
-
-class _LoginBackdropState extends State<LoginBackdrop> with SingleTickerProviderStateMixin {
-  late final AnimationController _spin;
-
-  @override
-  void initState() {
-    super.initState();
-    _spin = AnimationController(vsync: this, duration: const Duration(seconds: 18))..repeat();
-  }
-
-  @override
-  void dispose() {
-    _spin.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        const ColoredBox(color: OdinColors.canvas),
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(-0.7, -0.6),
-              radius: 1.4,
-              colors: [Color(0x2E8B5CF6), Colors.transparent],
-            ),
-          ),
-        ),
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(0.85, -0.7),
-              radius: 1.2,
-              colors: [Color(0x33C0392B), Colors.transparent],
-            ),
-          ),
-        ),
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(0.75, 0.85),
-              radius: 1.2,
-              colors: [Color(0x293A7BD5), Colors.transparent],
-            ),
-          ),
-        ),
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(-0.75, 0.9),
-              radius: 1.1,
-              colors: [Color(0x2406B6D4), Colors.transparent],
-            ),
-          ),
-        ),
-        Positioned.fill(
-          child: AnimatedBuilder(
-            animation: _spin,
-            builder: (_, __) {
-              return Transform.rotate(
-                angle: _spin.value * 6.28318,
-                child: Transform.scale(
-                  scale: 1.1,
-                  child: ImageFiltered(
-                    imageFilter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-                    child: CustomPaint(painter: _ConicAuroraPainter()),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        CustomPaint(painter: _LoginGridPainter()),
-        const _LoginStarsLayer(),
-        const _LoginParticlesLayer(),
-        widget.child,
-      ],
-    );
-  }
-}
-
-class _ConicAuroraPainter extends CustomPainter {
-  const _ConicAuroraPainter();
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.shortestSide * 1.2;
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    final paint = Paint()
-      ..shader = SweepGradient(
-        colors: const [
-          Color(0x1A8B5CF6),
-          Color(0x1FC0392B),
-          Color(0x1A3A7BD5),
-          Color(0x1A06B6D4),
-          Color(0x1A8B5CF6),
-        ],
-      ).createShader(rect);
-    canvas.drawRect(Offset.zero & size, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _LoginGridPainter extends CustomPainter {
-  const _LoginGridPainter();
-  @override
-  void paint(Canvas canvas, Size size) {
-    const step = 48.0;
-    final center = Offset(size.width / 2, size.height * 0.45);
-    final maxDist = size.shortestSide * 0.75;
-
-    for (var x = 0.0; x <= size.width; x += step) {
-      final dist = (Offset(x, center.dy) - center).distance;
-      final alpha = (1 - (dist / maxDist).clamp(0.0, 1.0)) * 0.025;
-      if (alpha <= 0.001) continue;
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        Paint()
-          ..color = Colors.white.withValues(alpha: alpha)
-          ..strokeWidth = 1,
-      );
-    }
-    for (var y = 0.0; y <= size.height; y += step) {
-      final dist = (Offset(center.dx, y) - center).distance;
-      final alpha = (1 - (dist / maxDist).clamp(0.0, 1.0)) * 0.025;
-      if (alpha <= 0.001) continue;
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        Paint()
-          ..color = Colors.white.withValues(alpha: alpha)
-          ..strokeWidth = 1,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// Étoiles scintillantes — login web Stars().
-class _LoginStarsLayer extends StatefulWidget {
-  const _LoginStarsLayer();
-
-  @override
-  State<_LoginStarsLayer> createState() => _LoginStarsLayerState();
-}
-
-class _LoginStarsLayerState extends State<_LoginStarsLayer> with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-  late final List<({double x, double y, double size, double phase})> _stars;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
-    _stars = List.generate(35, (i) {
-      return (x: (i * 47 % 100) / 100, y: (i * 73 % 100) / 100, size: 0.8 + (i % 5) * 0.3, phase: (i % 10) / 10.0);
-    });
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (_, __) {
-        return Stack(
-          fit: StackFit.expand,
-          children: _stars.map((s) {
-            final opacity = 0.15 + (0.55 * (0.5 + 0.5 * math.sin((_ctrl.value + s.phase) * math.pi * 2)));
-            return Positioned(
-              left: s.x * MediaQuery.sizeOf(context).width,
-              top: s.y * MediaQuery.sizeOf(context).height,
-              child: Container(
-                width: s.size,
-                height: s.size,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: opacity)),
-              ),
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-}
-
-/// Particules flottantes — login web Particles().
-class _LoginParticlesLayer extends StatefulWidget {
-  const _LoginParticlesLayer();
-
-  @override
-  State<_LoginParticlesLayer> createState() => _LoginParticlesLayerState();
-}
-
-class _LoginParticlesLayerState extends State<_LoginParticlesLayer> with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-  late final List<({double x, double y, double size, double phase})> _dots;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 8))..repeat();
-    _dots = List.generate(24, (i) {
-      return (x: (i * 37 % 100) / 100, y: (i * 59 % 100) / 100, size: 1.5 + (i % 4) * 0.8, phase: (i % 8) / 8.0);
-    });
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (_, __) {
-        return Stack(
-          fit: StackFit.expand,
-          children: _dots.map((d) {
-            final t = (_ctrl.value + d.phase) % 1.0;
-            final opacity = t < 0.5 ? t * 0.8 : (1 - t) * 0.8;
-            return Positioned(
-              left: d.x * MediaQuery.sizeOf(context).width,
-              top: d.y * MediaQuery.sizeOf(context).height - t * 30,
-              child: Container(
-                width: d.size,
-                height: d.size,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: opacity)),
-              ),
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-}
-
-/// Tilt 3D parallax — comme AuthShell web (rotateX/rotateY).
-class LoginTiltWrapper extends StatefulWidget {
-  const LoginTiltWrapper({super.key, required this.child, this.enabled = true});
-
-  final Widget child;
-  final bool enabled;
-
-  @override
-  State<LoginTiltWrapper> createState() => _LoginTiltWrapperState();
-}
-
-class _LoginTiltWrapperState extends State<LoginTiltWrapper> with SingleTickerProviderStateMixin {
-  late final AnimationController _idle;
-  double _px = 0;
-  double _py = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _idle = AnimationController(vsync: this, duration: const Duration(seconds: 5))..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _idle.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.enabled) return widget.child;
-
-    return Listener(
-      onPointerMove: (e) {
-        final box = context.findRenderObject() as RenderBox?;
-        if (box == null) return;
-        final local = box.globalToLocal(e.position);
-        setState(() {
-          _px = (local.dx / box.size.width - 0.5).clamp(-0.5, 0.5);
-          _py = (local.dy / box.size.height - 0.5).clamp(-0.5, 0.5);
-        });
-      },
-      onPointerUp: (_) => setState(() { _px = 0; _py = 0; }),
-      child: AnimatedBuilder(
-        animation: _idle,
-        builder: (_, child) {
-          final idleX = math.sin(_idle.value * math.pi) * 0.015;
-          final rotY = (_px * 0.12 + idleX).clamp(-0.12, 0.12);
-          final rotX = (-_py * 0.1).clamp(-0.1, 0.1);
-          return Transform(
-            alignment: Alignment.center,
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001)
-              ..rotateX(rotX)
-              ..rotateY(rotY),
-            child: child,
-          );
-        },
-        child: widget.child,
-      ),
-    );
-  }
-}
-
-/// Carte auth web — AUTH_CARD_STYLE (AuthShell.tsx).
-class AuthGlassCard extends StatefulWidget {
+/// Carte auth — glass panel statique (AUTH_CARD_STYLE, sans animation continue).
+class AuthGlassCard extends StatelessWidget {
   const AuthGlassCard({super.key, required this.child, this.padding = const EdgeInsets.all(28)});
 
   final Widget child;
   final EdgeInsets padding;
 
   @override
-  State<AuthGlassCard> createState() => _AuthGlassCardState();
-}
-
-class _AuthGlassCardState extends State<AuthGlassCard> with SingleTickerProviderStateMixin {
-  late final AnimationController _float;
-
-  @override
-  void initState() {
-    super.initState();
-    _float = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _float.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _float,
-      builder: (_, child) {
-        return Transform.translate(
-          offset: Offset(0, -3 * _float.value),
-          child: child,
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: OdinColors.panelBorder),
-          boxShadow: const [
-            BoxShadow(color: Color(0x66000000), blurRadius: 60, offset: Offset(0, 24)),
-            BoxShadow(color: Color(0x266366F1), blurRadius: 80),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-            child: Container(
-              padding: widget.padding,
-              decoration: const BoxDecoration(
-                color: Color(0x8C0F1423),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0x8C0F1423), Color(0x73101420)],
-                ),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: OdinColors.panelBorder),
+        boxShadow: const [
+          BoxShadow(color: Color(0x66000000), blurRadius: 60, offset: Offset(0, 24)),
+          BoxShadow(color: Color(0x266366F1), blurRadius: 80),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+          child: Container(
+            padding: padding,
+            decoration: const BoxDecoration(
+              color: Color(0x8C0F1423),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0x8C0F1423), Color(0x73101420)],
               ),
-              child: widget.child,
             ),
+            child: child,
           ),
         ),
       ),
@@ -517,6 +163,11 @@ class _OdinGlassTextFieldState extends State<OdinGlassTextField> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: OdinColors.danger),
               ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: OdinColors.danger, width: 1.6),
+              ),
+              errorStyle: const TextStyle(color: OdinColors.danger, fontSize: 12),
             ),
           ),
         ),

@@ -18,6 +18,73 @@ abstract final class OdinCurves {
   static const micro = Curves.easeOut;
 }
 
+/// Rotation 3D avec perspective — réutilisée pour les révélations "flip"
+/// (splash, login, onboarding) sans dépendance à un moteur 3D externe.
+class Perspective3D extends StatelessWidget {
+  const Perspective3D({
+    super.key,
+    required this.child,
+    this.rotateX = 0,
+    this.rotateY = 0,
+    this.depth = 0.0016,
+    this.alignment = Alignment.center,
+  });
+
+  final Widget child;
+  final double rotateX;
+  final double rotateY;
+  final double depth;
+  final Alignment alignment;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform(
+      alignment: alignment,
+      transform: Matrix4.identity()
+        ..setEntry(3, 2, depth)
+        ..rotateX(rotateX)
+        ..rotateY(rotateY),
+      child: child,
+    );
+  }
+}
+
+/// Révélation "flip" 3D au montage — fondu + rotation en profondeur, une
+/// seule fois, sans animation continue (sûr pour les widgets Hero partagés
+/// entre écrans, ex. splash → login).
+class Flip3DReveal extends StatelessWidget {
+  const Flip3DReveal({
+    super.key,
+    required this.child,
+    this.duration = const Duration(milliseconds: 900),
+    this.angle = 1.3,
+    this.depth = 0.0022,
+    this.curve = Curves.easeOutCubic,
+  });
+
+  final Widget child;
+  final Duration duration;
+  final double angle;
+  final double depth;
+  final Curve curve;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 1, end: 0),
+      duration: duration,
+      curve: curve,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: 1 - value,
+          child: Perspective3D(rotateY: value * angle, depth: depth, child: child!),
+        );
+      },
+      child: child,
+    );
+  }
+}
+
 /// Count-up entier 0 → value.
 class CountUpInt extends StatelessWidget {
   const CountUpInt({
@@ -222,36 +289,41 @@ class MorphLoadingButton extends StatelessWidget {
     return Center(
       child: GestureDetector(
         onTap: loading ? null : onPressed,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 320),
-          curve: Curves.easeInOut,
-          width: loading ? 52 : double.infinity,
-          height: 52,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [color, Color.lerp(color, OdinColors.accentStrong, 0.4)!],
-            ),
-            borderRadius: BorderRadius.circular(loading ? 26 : 14),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.4),
-                blurRadius: loading ? 12 : 22,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Center(
-            child: loading
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
-                  )
-                : Text(
-                    label,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final expandedWidth = constraints.maxWidth.isFinite ? constraints.maxWidth : 320.0;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 320),
+              curve: Curves.easeInOut,
+              width: loading ? 52 : expandedWidth,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color, Color.lerp(color, OdinColors.accentStrong, 0.4)!],
+                ),
+                borderRadius: BorderRadius.circular(loading ? 26 : 14),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.4),
+                    blurRadius: loading ? 12 : 22,
+                    offset: const Offset(0, 8),
                   ),
-          ),
+                ],
+              ),
+              child: Center(
+                child: loading
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+                      )
+                    : Text(
+                        label,
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white),
+                      ),
+              ),
+            );
+          },
         ),
       ),
     );
