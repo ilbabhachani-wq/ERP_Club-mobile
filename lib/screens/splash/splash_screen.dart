@@ -8,6 +8,10 @@ import '../../core/theme/odin_colors.dart';
 import '../../core/widgets/animated_particles.dart';
 import '../../core/widgets/odin_logo.dart';
 import '../../providers/app_providers.dart';
+import '../../providers/analyste_provider.dart';
+import '../../providers/avatar_provider.dart';
+import '../../providers/scout_provider.dart';
+import '../../providers/viiv_provider.dart';
 import '../../services/onboarding_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -36,7 +40,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _progressCtrl.forward();
 
     final auth = context.read<AuthProvider>();
-    final joueurData = context.read<JoueurDataProvider>();
 
     final results = await Future.wait([
       auth.init(),
@@ -49,15 +52,25 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     final onboardingDone = results[2] as bool;
 
     if (auth.isAuthenticated && auth.user != null) {
-      await joueurData.load(auth.user!);
+      final user = auth.user!;
+      await context.read<AvatarProvider>().bindUser(user.email);
+      if (user.isAnalyste) {
+        await context.read<AnalysteDataProvider>().load();
+        await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
+      } else if (user.isScout) {
+        await context.read<ScoutDataProvider>().load();
+      } else {
+        await context.read<JoueurDataProvider>().load(user);
+        await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
+      }
     }
 
     if (!mounted) return;
 
     if (!onboardingDone) {
       context.go('/onboarding');
-    } else if (auth.isAuthenticated) {
-      context.go('/');
+    } else if (auth.isAuthenticated && auth.user != null) {
+      context.go(auth.user!.homeRoute);
     } else {
       context.go('/login');
     }

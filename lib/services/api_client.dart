@@ -29,9 +29,10 @@ class ApiClient {
     };
   }
 
-  Future<dynamic> get(String path) async {
+  Future<dynamic> get(String path, {String? baseUrl}) async {
+    final base = (baseUrl ?? kApiBaseUrl).replaceAll(RegExp(r'/$'), '');
     final res = await _client.get(
-      Uri.parse('$kApiBaseUrl$path'),
+      Uri.parse('$base$path'),
       headers: _headers(),
     );
     return _parse(res);

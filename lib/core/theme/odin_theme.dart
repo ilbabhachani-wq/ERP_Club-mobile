@@ -87,6 +87,45 @@ abstract final class OdinTheme {
       textTheme: GoogleFonts.interTextTheme(base.textTheme).apply(
         bodyColor: OdinColors.textPrimary,
         displayColor: OdinColors.textPrimary,
+      ).copyWith(
+        headlineMedium: GoogleFonts.inter(
+          fontSize: 24,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -0.5,
+          color: OdinColors.textPrimary,
+        ),
+        titleLarge: GoogleFonts.inter(
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.3,
+          color: OdinColors.textPrimary,
+        ),
+        titleMedium: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          color: OdinColors.textPrimary,
+        ),
+        titleSmall: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          color: OdinColors.textPrimary,
+        ),
+        bodyMedium: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: OdinColors.textSecondary,
+          height: 1.4,
+        ),
+        bodySmall: GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: OdinColors.textMuted,
+        ),
+        labelLarge: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          color: OdinColors.textPrimary,
+        ),
       ),
     );
   }

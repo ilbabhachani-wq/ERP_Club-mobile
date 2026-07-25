@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Viiv GX17 · 3D</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(120% 90% at 50% 20%, #1a2430 0%, #0a0a10 55%, #050508 100%);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      color: #e2e8f0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #c { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+    #c:active { cursor: grabbing; }
+    #ui {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    #loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      background: radial-gradient(circle at 50% 40%, rgba(34,211,238,0.08), transparent 50%);
+      transition: opacity 0.45s ease;
+    }
+    #loader.hide { opacity: 0 !important; pointer-events: none; visibility: hidden; }
+    .ring {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid rgba(34, 211, 238, 0.2);
+      border-top-color: #22d3ee;
+      animation: spin 0.85s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loader p {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(226, 232, 240, 0.7);
+      font-weight: 600;
+    }
+    #hint {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.78);
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    #hint.show { opacity: 1; transform: none; }
+    #hint svg { width: 14px; height: 14px; color: #22d3ee; flex-shrink: 0; }
+    #err {
+      display: none;
+      position: absolute;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: #fda4af;
+      background: #0a0a10;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="ui">
+    <div id="loader">
+      <div class="ring"></div>
+      <p>Chargement GX17</p>
+    </div>
+    <div id="hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 3a9 9 0 1 0 9 9" />
+        <path d="M21 3v6h-6" />
+      </svg>
+      Glisser · Zoom · 360°
+    </div>
+    <div id="err"></div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    const params = new URLSearchParams(location.search);
+    // Prefer web/models symlink (stable). Fallback: Flutter asset URL.
+    const SRC = params.get('src') || 'models/viiv-gx17.glb';
+
+    const canvas = document.getElementById('c');
+    const loaderEl = document.getElementById('loader');
+    const hintEl = document.getElementById('hint');
+    const errEl = document.getElementById('err');
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: false,
+      powerPreference: 'high-performance',
+    });
+    renderer.setClearColor(0x0a0a12, 1);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a12);
+
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
+    camera.position.set(0.55, 0.28, 0.85);
+
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    // Soft studio lights
+    const key = new THREE.DirectionalLight(0xffffff, 2.2);
+    key.position.set(2.2, 3.2, 2.5);
+    key.castShadow = true;
+    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.bias = -0.0002;
+    scene.add(key);
+
+    const fill = new THREE.DirectionalLight(0x88c0ff, 0.55);
+    fill.position.set(-2.5, 1.2, -1.5);
+    scene.add(fill);
+
+    const rim = new THREE.DirectionalLight(0x22d3ee, 0.85);
+    rim.position.set(-1.2, 2.0, 2.8);
+    scene.add(rim);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+    scene.add(new THREE.HemisphereLight(0xdbeafe, 0x0f172a, 0.45));
+
+    // Contact shadow plane
+    const shadowMat = new THREE.ShadowMaterial({ opacity: 0.35 });
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), shadowMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.02;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const controls = new OrbitControls(camera, canvas);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.enablePan = false;
+    controls.minDistance = 0.35;
+    controls.maxDistance = 2.4;
+    controls.minPolarAngle = 0.25;
+    controls.maxPolarAngle = Math.PI * 0.58;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.9;
+    controls.target.set(0, 0.08, 0);
+
+    let idleTimer = 0;
+    const stopAuto = () => {
+      controls.autoRotate = false;
+      idleTimer = 0;
+    };
+    const onInteract = () => stopAuto();
+    controls.addEventListener('start', onInteract);
+    canvas.addEventListener('pointerdown', onInteract);
+    canvas.addEventListener('wheel', onInteract, { passive: true });
+
+    function resize() {
+      const w = canvas.clientWidth || window.innerWidth;
+      const h = canvas.clientHeight || window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / Math.max(h, 1);
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function createViivBrandTexture() {
+      const w = 1024;
+      const h = 256;
+      const c = document.createElement('canvas');
+      c.width = w;
+      c.height = h;
+      const ctx = c.getContext('2d');
+
+      // Gold metal plate (covers WHOOP engraving)
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#e8d5a3');
+      grad.addColorStop(0.45, '#c9a84a');
+      grad.addColorStop(0.55, '#a67c2a');
+      grad.addColorStop(1, '#8a6820');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Soft brushed metal lines
+      ctx.globalAlpha = 0.08;
+      for (let y = 0; y < h; y += 2) {
+        ctx.fillStyle = y % 4 === 0 ? '#fff' : '#000';
+        ctx.fillRect(0, y, w, 1);
+      }
+      ctx.globalAlpha = 1;
+
+      // Inner bevel
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(10, 10, w - 20, h - 20);
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(18, 18, w - 36, h - 36);
+
+      // Engraved VIIV (manual spacing — letterSpacing not reliable on all browsers)
+      const label = 'VIIV';
+      ctx.font = '800 132px "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const gap = 28;
+      const widths = [...label].map((ch) => ctx.measureText(ch).width);
+      const total = widths.reduce((a, b) => a + b, 0) + gap * (label.length - 1);
+      let x = (w - total) / 2;
+      for (let i = 0; i < label.length; i++) {
+        const ch = label[i];
+        const cx = x + widths[i] / 2;
+        ctx.fillStyle = 'rgba(40, 24, 4, 0.55)';
+        ctx.fillText(ch, cx + 3, h / 2 + 5);
+        ctx.fillStyle = 'rgba(255, 236, 180, 0.5)';
+        ctx.fillText(ch, cx - 2, h / 2 - 3);
+        ctx.fillStyle = '#2c1e0a';
+        ctx.fillText(ch, cx, h / 2);
+        x += widths[i] + gap;
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 8;
+      return tex;
+    }
+
+    function paintViivIntoAlbedo(hit) {
+      return false;
+    }
+
+    /** Cover WHOOP engraving with a VIIV gold brand plate. */
+    function attachViivBrand(root) {
+      window.__viivRoot = root;
+      const place = () => {
+        try {
+          const target = window.__viivRoot || root;
+          target.updateMatrixWorld(true);
+          camera.updateMatrixWorld(true);
+          controls.update();
+
+          const meshes = [];
+          target.traverse((o) => {
+            if (o.isMesh) meshes.push(o);
+          });
+          window.__viivMeshCount = meshes.length;
+          if (!meshes.length) return;
+
+          const box = new THREE.Box3().setFromObject(target);
+          const size = box.getSize(new THREE.Vector3());
+          const center = box.getCenter(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z) || 1;
+
+          // Find frontmost vertex (module outer face) then ray toward it
+          const v = new THREE.Vector3();
+          const tip = new THREE.Vector3();
+          let tipZ = -Infinity;
+          for (const mesh of meshes) {
+            const pos = mesh.geometry?.attributes?.position;
+            if (!pos) continue;
+            // Ensure bounds for raycasting
+            if (!mesh.geometry.boundingSphere) mesh.geometry.computeBoundingSphere();
+            for (let i = 0; i < pos.count; i += 3) {
+              v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
+              if (v.z > tipZ) {
+                tipZ = v.z;
+                tip.copy(v);
+              }
+            }
+          }
+          window.__viivTip = tip.toArray();
+
+          const raycaster = new THREE.Raycaster();
+          raycaster.far = maxDim * 50;
+          let hit = null;
+
+          // Aim at tip, then slightly below (WHOOP bar)
+          const aims = [
+            tip.clone().add(new THREE.Vector3(0, -maxDim * 0.08, 0)),
+            tip.clone().add(new THREE.Vector3(0, -maxDim * 0.1, 0)),
+            tip.clone().add(new THREE.Vector3(0, -maxDim * 0.06, 0)),
+            tip.clone().add(new THREE.Vector3(0, -maxDim * 0.12, 0)),
+            tip.clone().add(new THREE.Vector3(maxDim * 0.01, -maxDim * 0.08, 0)),
+            tip.clone().add(new THREE.Vector3(-maxDim * 0.01, -maxDim * 0.08, 0)),
+            tip.clone(),
+          ];
+          for (const aim of aims) {
+            const origin = aim.clone().add(new THREE.Vector3(0, 0, maxDim * 2));
+            raycaster.set(origin, aim.clone().sub(origin).normalize());
+            const hits = raycaster.intersectObjects(meshes, true);
+            if (hits.length) {
+              hit = hits[0];
+              break;
+            }
+          }
+
+          // Broad AABB front rays
+          if (!hit) {
+            for (const t of [0.35, 0.4, 0.45, 0.5, 0.55]) {
+              const origin = new THREE.Vector3(center.x, box.min.y + size.y * t, box.max.z + maxDim * 2);
+              raycaster.set(origin, new THREE.Vector3(0, 0, -1));
+              const hits = raycaster.intersectObjects(meshes, true);
+              if (hits.length) {
+                hit = hits[0];
+                break;
+              }
+            }
+          }
+
+          window.__viivHitOk = !!hit;
+          if (!hit) {
+            // Place on frontmost tip, dropped to lower gold WHOOP bar
+            hit = {
+              point: tip.clone().add(new THREE.Vector3(0, -maxDim * 0.09, maxDim * 0.002)),
+              face: { normal: new THREE.Vector3(0, 0, 1) },
+              object: { matrixWorld: new THREE.Matrix4() },
+            };
+          }
+
+          const old = scene.getObjectByName('ViivBrandPlate');
+          if (old) {
+            scene.remove(old);
+            old.geometry?.dispose?.();
+            old.material?.map?.dispose?.();
+            old.material?.dispose?.();
+          }
+
+          const tex = createViivBrandTexture();
+          const mat = new THREE.MeshStandardMaterial({
+            map: tex,
+            metalness: 0.96,
+            roughness: 0.26,
+            envMapIntensity: 1.45,
+            polygonOffset: true,
+            polygonOffsetFactor: -6,
+            depthWrite: false,
+          });
+          const pw = maxDim * 0.28;
+          const ph = maxDim * 0.06;
+          const plate = new THREE.Mesh(new THREE.PlaneGeometry(pw, ph), mat);
+          plate.name = 'ViivBrandPlate';
+          plate.renderOrder = 20;
+
+          let n;
+          if (hit.face && hit.object?.matrixWorld) {
+            n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld).normalize();
+          } else {
+            n = new THREE.Vector3(0, 0, 1);
+          }
+          plate.position.copy(hit.point).addScaledVector(n, maxDim * 0.004);
+          plate.lookAt(hit.point.clone().add(n));
+          scene.add(plate);
+          window.__viivPlateOk = true;
+          window.__viivBrandUv = hit.uv ? { u: hit.uv.x, v: hit.uv.y } : null;
+        } catch (e) {
+          console.error('VIIV plate error', e);
+          window.__viivLastError = String(e && e.stack ? e.stack : e);
+        }
+      };
+
+      requestAnimationFrame(() => requestAnimationFrame(place));
+      setTimeout(place, 500);
+      setTimeout(place, 1500);
+      window.__placeViivBrand = place;
+      return null;
+    }
+
+    function fitObject(root) {
+      // Tripo export often faces -Z; flip so the dial faces the camera.
+      root.rotation.y = Math.PI;
+
+      const box = new THREE.Box3().setFromObject(root);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      root.position.sub(center);
+      const box2 = new THREE.Box3().setFromObject(root);
+      root.position.y -= box2.min.y;
+      ground.position.y = -0.001;
+
+      const maxDim = Math.max(size.x, size.y, size.z) || 1;
+      const dist = maxDim * 2.05;
+      camera.position.set(0, dist * 0.38, dist * 1.15);
+      controls.target.set(0, size.y * 0.42, 0);
+      controls.minDistance = maxDim * 0.85;
+      controls.maxDistance = maxDim * 4.8;
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 1.1;
+      controls.update();
+      camera.updateMatrixWorld(true);
+      idleTimer = 0;
+
+      // New Tripo GX17 mesh already has correct branding — no WHOOP cover plate.
+      // attachViivBrand(root);
+    }
+
+    function showError(msg) {
+      loaderEl.classList.add('hide');
+      errEl.style.display = 'flex';
+      errEl.textContent = msg;
+    }
+
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+
+    gltfLoader.load(
+      SRC,
+      (gltf) => {
+        const root = gltf.scene;
+        root.traverse((obj) => {
+          if (obj.isMesh) {
+            obj.castShadow = true;
+            obj.receiveShadow = true;
+            if (obj.material) {
+              const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+              for (const m of mats) {
+                if (m && m.isMeshStandardMaterial) {
+                  m.envMapIntensity = 1.15;
+                  m.needsUpdate = true;
+                }
+              }
+            }
+          }
+        });
+        scene.add(root);
+        try {
+          fitObject(root);
+        } catch (e) {
+          console.error('fit/brand error', e);
+          window.__viivLastError = String(e && e.stack ? e.stack : e);
+        }
+        loaderEl.classList.add('hide');
+        requestAnimationFrame(() => hintEl.classList.add('show'));
+        setTimeout(() => hintEl.classList.remove('show'), 4500);
+      },
+      undefined,
+      (err) => {
+        console.error(err);
+        showError('Impossible de charger le modèle 3D GX17.');
+      },
+    );
+
+    window.__viivScene = scene;
+    window.__viivCamera = camera;
+    window.__viivRenderer = renderer;
+
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = clock.getDelta();
+      idleTimer += dt;
+      // Resume spin shortly after the user stops dragging
+      if (!controls.autoRotate && idleTimer > 2.5) {
+        controls.autoRotate = true;
+      }
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>

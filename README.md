@@ -65,6 +65,20 @@ Pour un backend local :
 flutter run --dart-define=API_BASE_URL=http://localhost:3000
 ```
 
+Live Match ML (`integrations/analyste-live-ml`) :
+
+```bash
+# Terminal 1 — API ML
+cd ../integrations/analyste-live-ml && source .venv/bin/activate
+uvicorn api.main:app --host 127.0.0.1 --port 8090
+
+# Terminal 2 — mobile (Chrome si Xcode absent)
+flutter run -d chrome --dart-define=ANALYSTE_ML_URL=http://127.0.0.1:8090
+
+# Smoke test contrat Live
+flutter test test/live_match_ml_smoke_test.dart --dart-define=ANALYSTE_ML_URL=http://127.0.0.1:8090
+```
+
 ## Connexion
 
 Utilisez un compte avec le rôle **Joueur** (ex. `joueur@club.com`).

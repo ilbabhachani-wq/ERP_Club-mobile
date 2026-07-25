@@ -1,11 +1,10 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 import '../animations/odin_animations.dart';
 import '../theme/odin_colors.dart';
-
-/// Fond login web — aurora conique + grille masquée (login-aurora / login-grid).
+/// Fond login web — aurora + grille + étoiles + orbes + particules animées.
 class LoginBackdrop extends StatefulWidget {
   const LoginBackdrop({super.key, required this.child});
 
@@ -15,18 +14,24 @@ class LoginBackdrop extends StatefulWidget {
   State<LoginBackdrop> createState() => _LoginBackdropState();
 }
 
-class _LoginBackdropState extends State<LoginBackdrop> with SingleTickerProviderStateMixin {
+class _LoginBackdropState extends State<LoginBackdrop> with TickerProviderStateMixin {
   late final AnimationController _spin;
+  late final AnimationController _pulse;
+  late final AnimationController _drift;
 
   @override
   void initState() {
     super.initState();
-    _spin = AnimationController(vsync: this, duration: const Duration(seconds: 18))..repeat();
+    _spin = AnimationController(vsync: this, duration: const Duration(seconds: 22))..repeat();
+    _pulse = AnimationController(vsync: this, duration: const Duration(seconds: 5))..repeat(reverse: true);
+    _drift = AnimationController(vsync: this, duration: const Duration(seconds: 14))..repeat();
   }
 
   @override
   void dispose() {
     _spin.dispose();
+    _pulse.dispose();
+    _drift.dispose();
     super.dispose();
   }
 
@@ -36,62 +41,114 @@ class _LoginBackdropState extends State<LoginBackdrop> with SingleTickerProvider
       fit: StackFit.expand,
       children: [
         const ColoredBox(color: OdinColors.canvas),
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(-0.7, -0.6),
-              radius: 1.4,
-              colors: [Color(0x2E8B5CF6), Colors.transparent],
-            ),
-          ),
+        // Breathing radial glows
+        AnimatedBuilder(
+          animation: Listenable.merge([_pulse, _drift]),
+          builder: (_, _) {
+            final p = _pulse.value;
+            final d = _drift.value * math.pi * 2;
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment(-0.75 + math.sin(d) * 0.12, -0.55 + math.cos(d) * 0.08),
+                      radius: 1.15 + p * 0.25,
+                      colors: [
+                        Color.fromRGBO(139, 92, 246, 0.22 + p * 0.1),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment(0.8 + math.cos(d * 0.8) * 0.1, -0.65 + math.sin(d * 0.7) * 0.1),
+                      radius: 1.05 + (1 - p) * 0.2,
+                      colors: [
+                        Color.fromRGBO(192, 57, 43, 0.24 + (1 - p) * 0.08),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment(0.7 + math.sin(d * 1.1) * 0.1, 0.8 + math.cos(d) * 0.08),
+                      radius: 1.1 + p * 0.15,
+                      colors: [
+                        Color.fromRGBO(58, 123, 213, 0.2 + p * 0.08),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment(-0.7 + math.cos(d) * 0.1, 0.85),
+                      radius: 1.0 + (1 - p) * 0.18,
+                      colors: [
+                        Color.fromRGBO(6, 182, 212, 0.18 + (1 - p) * 0.07),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(0.85, -0.7),
-              radius: 1.2,
-              colors: [Color(0x33C0392B), Colors.transparent],
-            ),
-          ),
-        ),
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(0.75, 0.85),
-              radius: 1.2,
-              colors: [Color(0x293A7BD5), Colors.transparent],
-            ),
-          ),
-        ),
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(-0.75, 0.9),
-              radius: 1.1,
-              colors: [Color(0x2406B6D4), Colors.transparent],
-            ),
-          ),
-        ),
+        // Spinning aurora
         Positioned.fill(
           child: AnimatedBuilder(
             animation: _spin,
-            builder: (_, __) {
+            builder: (_, _) {
               return Transform.rotate(
                 angle: _spin.value * 6.28318,
                 child: Transform.scale(
-                  scale: 1.1,
+                  scale: 1.15,
                   child: ImageFiltered(
-                    imageFilter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-                    child: CustomPaint(painter: _ConicAuroraPainter()),
+                    imageFilter: ImageFilter.blur(sigmaX: 70, sigmaY: 70),
+                    child: const CustomPaint(painter: _ConicAuroraPainter()),
                   ),
                 ),
               );
             },
           ),
         ),
-        CustomPaint(painter: _LoginGridPainter()),
+        // Soft floating orbs
+        AnimatedBuilder(
+          animation: _drift,
+          builder: (_, _) => CustomPaint(
+            painter: _FloatingOrbsPainter(_drift.value),
+            size: Size.infinite,
+          ),
+        ),
+        // Pulsing grid
+        AnimatedBuilder(
+          animation: _pulse,
+          builder: (_, _) => CustomPaint(
+            painter: _LoginGridPainter(intensity: 0.7 + _pulse.value * 0.5),
+            size: Size.infinite,
+          ),
+        ),
         const _LoginStarsLayer(),
         const _LoginParticlesLayer(),
+        // Soft vignette
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment.center,
+              radius: 1.15,
+              colors: [Colors.transparent, Color(0x660B0B14)],
+              stops: [0.45, 1],
+            ),
+          ),
+        ),
         widget.child,
       ],
     );
@@ -108,11 +165,12 @@ class _ConicAuroraPainter extends CustomPainter {
     final paint = Paint()
       ..shader = SweepGradient(
         colors: const [
-          Color(0x1A8B5CF6),
-          Color(0x1FC0392B),
-          Color(0x1A3A7BD5),
-          Color(0x1A06B6D4),
-          Color(0x1A8B5CF6),
+          Color(0x228B5CF6),
+          Color(0x28C0392B),
+          Color(0x223A7BD5),
+          Color(0x2206B6D4),
+          Color(0x28FF7A00),
+          Color(0x228B5CF6),
         ],
       ).createShader(rect);
     canvas.drawRect(Offset.zero & size, paint);
@@ -122,8 +180,43 @@ class _ConicAuroraPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+class _FloatingOrbsPainter extends CustomPainter {
+  _FloatingOrbsPainter(this.t);
+  final double t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final orbs = [
+      (Alignment(-0.6, -0.3), const Color(0xFF8B5CF6), 90.0, 0.0),
+      (Alignment(0.55, -0.45), const Color(0xFFFF7A00), 70.0, 0.33),
+      (Alignment(0.4, 0.55), const Color(0xFF3B82F6), 80.0, 0.66),
+      (Alignment(-0.45, 0.5), const Color(0xFF06B6D4), 60.0, 0.2),
+    ];
+    for (final o in orbs) {
+      final phase = (t + o.$4) % 1.0;
+      final bob = math.sin(phase * math.pi * 2) * 18;
+      final cx = size.width * (o.$1.x * 0.5 + 0.5);
+      final cy = size.height * (o.$1.y * 0.5 + 0.5) + bob;
+      final r = o.$3 * (0.9 + 0.15 * math.sin(phase * math.pi * 2));
+      final paint = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            o.$2.withValues(alpha: 0.22),
+            o.$2.withValues(alpha: 0.0),
+          ],
+        ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r));
+      canvas.drawCircle(Offset(cx, cy), r, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _FloatingOrbsPainter oldDelegate) => oldDelegate.t != t;
+}
+
 class _LoginGridPainter extends CustomPainter {
-  const _LoginGridPainter();
+  const _LoginGridPainter({this.intensity = 1});
+  final double intensity;
+
   @override
   void paint(Canvas canvas, Size size) {
     const step = 48.0;
@@ -132,7 +225,7 @@ class _LoginGridPainter extends CustomPainter {
 
     for (var x = 0.0; x <= size.width; x += step) {
       final dist = (Offset(x, center.dy) - center).distance;
-      final alpha = (1 - (dist / maxDist).clamp(0.0, 1.0)) * 0.025;
+      final alpha = (1 - (dist / maxDist).clamp(0.0, 1.0)) * 0.04 * intensity;
       if (alpha <= 0.001) continue;
       canvas.drawLine(
         Offset(x, 0),
@@ -144,7 +237,7 @@ class _LoginGridPainter extends CustomPainter {
     }
     for (var y = 0.0; y <= size.height; y += step) {
       final dist = (Offset(center.dx, y) - center).distance;
-      final alpha = (1 - (dist / maxDist).clamp(0.0, 1.0)) * 0.025;
+      final alpha = (1 - (dist / maxDist).clamp(0.0, 1.0)) * 0.04 * intensity;
       if (alpha <= 0.001) continue;
       canvas.drawLine(
         Offset(0, y),
@@ -157,7 +250,7 @@ class _LoginGridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _LoginGridPainter oldDelegate) => oldDelegate.intensity != intensity;
 }
 
 /// Étoiles scintillantes — login web Stars().
@@ -175,9 +268,14 @@ class _LoginStarsLayerState extends State<_LoginStarsLayer> with SingleTickerPro
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
-    _stars = List.generate(35, (i) {
-      return (x: (i * 47 % 100) / 100, y: (i * 73 % 100) / 100, size: 0.8 + (i % 5) * 0.3, phase: (i % 10) / 10.0);
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
+    _stars = List.generate(55, (i) {
+      return (
+        x: (i * 47 % 100) / 100,
+        y: (i * 73 % 100) / 100,
+        size: 0.9 + (i % 6) * 0.35,
+        phase: (i % 12) / 12.0,
+      );
     });
   }
 
@@ -189,30 +287,38 @@ class _LoginStarsLayerState extends State<_LoginStarsLayer> with SingleTickerPro
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
     return AnimatedBuilder(
       animation: _ctrl,
-      builder: (_, __) {
-        return Stack(
-          fit: StackFit.expand,
-          children: _stars.map((s) {
-            final opacity = 0.15 + (0.55 * (0.5 + 0.5 * math.sin((_ctrl.value + s.phase) * math.pi * 2)));
-            return Positioned(
-              left: s.x * MediaQuery.sizeOf(context).width,
-              top: s.y * MediaQuery.sizeOf(context).height,
-              child: Container(
-                width: s.size,
-                height: s.size,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: opacity)),
-              ),
-            );
-          }).toList(),
+      builder: (_, _) {
+        return CustomPaint(
+          size: size,
+          painter: _StarsPainter(_stars, _ctrl.value),
         );
       },
     );
   }
 }
 
-/// Particules flottantes — login web Particles().
+class _StarsPainter extends CustomPainter {
+  _StarsPainter(this.stars, this.t);
+  final List<({double x, double y, double size, double phase})> stars;
+  final double t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final s in stars) {
+      final opacity = 0.12 + (0.7 * (0.5 + 0.5 * math.sin((t + s.phase) * math.pi * 2)));
+      final paint = Paint()..color = Colors.white.withValues(alpha: opacity);
+      canvas.drawCircle(Offset(s.x * size.width, s.y * size.height), s.size, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _StarsPainter oldDelegate) => oldDelegate.t != t;
+}
+
+/// Particules flottantes colorées — login web Particles().
 class _LoginParticlesLayer extends StatefulWidget {
   const _LoginParticlesLayer();
 
@@ -222,14 +328,29 @@ class _LoginParticlesLayer extends StatefulWidget {
 
 class _LoginParticlesLayerState extends State<_LoginParticlesLayer> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
-  late final List<({double x, double y, double size, double phase})> _dots;
+  late final List<({double x, double y, double size, double phase, Color color, double speed})> _dots;
+
+  static const _palette = [
+    Color(0xFFFF7A00),
+    Color(0xFF8B5CF6),
+    Color(0xFF3B82F6),
+    Color(0xFF06B6D4),
+    Color(0xFF22C55E),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 8))..repeat();
-    _dots = List.generate(24, (i) {
-      return (x: (i * 37 % 100) / 100, y: (i * 59 % 100) / 100, size: 1.5 + (i % 4) * 0.8, phase: (i % 8) / 8.0);
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
+    _dots = List.generate(36, (i) {
+      return (
+        x: (i * 37 % 100) / 100,
+        y: (i * 59 % 100) / 100,
+        size: 2.0 + (i % 5) * 1.1,
+        phase: (i % 10) / 10.0,
+        color: _palette[i % _palette.length],
+        speed: 0.6 + (i % 4) * 0.25,
+      );
     });
   }
 
@@ -241,28 +362,40 @@ class _LoginParticlesLayerState extends State<_LoginParticlesLayer> with SingleT
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
     return AnimatedBuilder(
       animation: _ctrl,
-      builder: (_, __) {
-        return Stack(
-          fit: StackFit.expand,
-          children: _dots.map((d) {
-            final t = (_ctrl.value + d.phase) % 1.0;
-            final opacity = t < 0.5 ? t * 0.8 : (1 - t) * 0.8;
-            return Positioned(
-              left: d.x * MediaQuery.sizeOf(context).width,
-              top: d.y * MediaQuery.sizeOf(context).height - t * 30,
-              child: Container(
-                width: d.size,
-                height: d.size,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: opacity)),
-              ),
-            );
-          }).toList(),
+      builder: (_, _) {
+        return CustomPaint(
+          size: size,
+          painter: _ParticlesDriftPainter(_dots, _ctrl.value),
         );
       },
     );
   }
+}
+
+class _ParticlesDriftPainter extends CustomPainter {
+  _ParticlesDriftPainter(this.dots, this.t);
+  final List<({double x, double y, double size, double phase, Color color, double speed})> dots;
+  final double t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final d in dots) {
+      final phase = (t * d.speed + d.phase) % 1.0;
+      final opacity = phase < 0.5 ? phase * 1.1 : (1 - phase) * 1.1;
+      final dx = d.x * size.width + math.sin((t + d.phase) * math.pi * 2) * 12;
+      final dy = ((d.y - phase * 0.35) % 1.0) * size.height;
+      final paint = Paint()
+        ..color = d.color.withValues(alpha: opacity.clamp(0.0, 0.75))
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.2);
+      canvas.drawCircle(Offset(dx, dy), d.size, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ParticlesDriftPainter oldDelegate) => oldDelegate.t != t;
 }
 
 /// Tilt 3D parallax — comme AuthShell web (rotateX/rotateY).
@@ -1027,41 +1160,66 @@ class OdinGlassNavBar extends StatelessWidget {
     required this.selectedIndex,
     required this.onSelected,
     required this.destinations,
+    this.accentColor = OdinColors.accent,
   });
 
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final List<NavigationDestination> destinations;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-        child: Container(
-          height: 72,
-          decoration: BoxDecoration(
-            color: const Color(0xE60B0B14),
-            border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
-          ),
-          child: SafeArea(
-            top: false,
+    final bottom = MediaQuery.paddingOf(context).bottom;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(12, 0, 12, bottom > 0 ? bottom : 10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+          child: Container(
+            height: 68,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              color: const Color(0xEE12121C),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  blurRadius: 28,
+                  offset: const Offset(0, 10),
+                ),
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.08),
+                  blurRadius: 20,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final itemW = constraints.maxWidth / destinations.length;
                 return Stack(
                   children: [
                     AnimatedPositioned(
-                      duration: const Duration(milliseconds: 280),
+                      duration: const Duration(milliseconds: 320),
                       curve: Curves.easeOutCubic,
-                      left: itemW * selectedIndex + 8,
-                      width: itemW - 16,
+                      left: itemW * selectedIndex + 6,
+                      width: itemW - 12,
                       top: 8,
-                      height: 40,
+                      height: 52,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: OdinColors.accent.withValues(alpha: 0.16),
-                          borderRadius: BorderRadius.circular(20),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              accentColor.withValues(alpha: 0.28),
+                              accentColor.withValues(alpha: 0.08),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: accentColor.withValues(alpha: 0.25)),
                         ),
                       ),
                     ),
@@ -1069,27 +1227,41 @@ class OdinGlassNavBar extends StatelessWidget {
                       children: List.generate(destinations.length, (i) {
                         final d = destinations[i];
                         final active = i == selectedIndex;
+                        final iconData = active
+                            ? (d.selectedIcon as Icon?)?.icon ?? (d.icon as Icon).icon
+                            : (d.icon as Icon).icon;
                         return Expanded(
                           child: InkWell(
-                            onTap: () => onSelected(i),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  active ? (d.selectedIcon as Icon?)?.icon ?? (d.icon as Icon).icon : (d.icon as Icon).icon,
-                                  size: 22,
-                                  color: active ? OdinColors.accent : OdinColors.textMuted,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  d.label,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                                    color: active ? OdinColors.accent : OdinColors.textMuted,
+                            borderRadius: BorderRadius.circular(18),
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              onSelected(i);
+                            },
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 220),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: active ? FontWeight.w800 : FontWeight.w500,
+                                color: active ? accentColor : OdinColors.textMuted,
+                                letterSpacing: active ? 0.2 : 0,
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  AnimatedScale(
+                                    scale: active ? 1.08 : 1,
+                                    duration: const Duration(milliseconds: 220),
+                                    curve: Curves.easeOutBack,
+                                    child: Icon(
+                                      iconData,
+                                      size: 22,
+                                      color: active ? accentColor : OdinColors.textMuted,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 3),
+                                  Text(d.label),
+                                ],
+                              ),
                             ),
                           ),
                         );
@@ -1112,42 +1284,108 @@ class OdinProAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.club,
     this.subtitle = 'Mon Espace',
     this.actions,
+    this.showLogo = true,
+    this.accentColor = OdinColors.accent,
+    this.logoSize = 56,
   });
 
   final String club;
   final String subtitle;
   final List<Widget>? actions;
+  final bool showLogo;
+  final Color accentColor;
+  final double logoSize;
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => Size.fromHeight(logoSize + 20);
 
   @override
   Widget build(BuildContext context) {
+    final barH = logoSize + 20;
     return ClipRRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: AppBar(
-          backgroundColor: const Color(0x990B0B14),
-          elevation: 0,
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                subtitle.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: OdinColors.textMuted,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              Text(
-                club,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: -0.3),
+        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xCC0B0B14),
+            border: Border(
+              bottom: BorderSide(color: OdinColors.accent.withValues(alpha: 0.22)),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: OdinColors.accent.withValues(alpha: 0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
-          actions: actions,
+          child: SafeArea(
+            bottom: false,
+            child: SizedBox(
+              height: barH,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    if (showLogo) ...[
+                      Container(
+                        width: logoSize,
+                        height: logoSize,
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          color: OdinColors.panelSolid,
+                          border: Border.all(color: OdinColors.accent.withValues(alpha: 0.35)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: OdinColors.accent.withValues(alpha: 0.28),
+                              blurRadius: 16,
+                            ),
+                          ],
+                        ),
+                        child: Image.asset(
+                          'assets/images/odin-logo.png',
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            subtitle.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: OdinColors.accent.withValues(alpha: 0.95),
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.3,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            club,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.3,
+                              color: OdinColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (actions != null) ...actions!,
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

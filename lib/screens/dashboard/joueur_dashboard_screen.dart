@@ -8,7 +8,9 @@ import '../../core/widgets/fifa_player_card.dart';
 import '../../core/widgets/fifa_card_utils.dart';
 import '../../core/widgets/odin_widgets.dart';
 import '../../providers/app_providers.dart';
-
+import '../../providers/viiv_provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter/services.dart';
 class JoueurDashboardScreen extends StatelessWidget {
   const JoueurDashboardScreen({super.key});
 
@@ -40,6 +42,8 @@ class JoueurDashboardScreen extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             _HeroSection(player: player, stats: stats, club: club, league: league),
+            const SizedBox(height: 16),
+            const _ViivJoueurBanner(),
             const SizedBox(height: 16),
             GridView.count(
               crossAxisCount: 2,
@@ -356,5 +360,82 @@ class _HeroSection extends StatelessWidget {
           .scaleXY(begin: 1, end: 1.04, duration: 1200.ms, curve: Curves.easeInOut);
     }
     return pill;
+  }
+}
+
+/// Bannière Viiv — max données montre sur l'accueil joueur.
+class _ViivJoueurBanner extends StatelessWidget {
+  const _ViivJoueurBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final viiv = context.watch<ViivProvider>();
+    final m = viiv.metrics;
+    final connected = viiv.ble.isConnected || (m?.connected ?? false);
+
+    return OdinAnimations.fadeUp(
+      GlassCard(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          context.go('/viiv');
+        },
+        accentColor: const Color(0xFF22D3EE),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                color: const Color(0xFF22D3EE).withValues(alpha: 0.15),
+              ),
+              child: const Icon(Icons.watch_rounded, color: Color(0xFF22D3EE)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('Viiv GX17', style: TextStyle(fontWeight: FontWeight.w900)),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: connected ? const Color(0xFF22C55E) : Colors.white24,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        connected ? 'Connectée' : 'Bluetooth',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: connected ? const Color(0xFF22C55E) : Colors.white38,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    m == null
+                        ? 'Connecter la montre · sync santé joueur'
+                        : '${m.steps} pas · ${m.restingHr} bpm · HRV ${m.hrv} · Rec ${m.recovery}%',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.55)),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: Colors.white38),
+          ],
+        ),
+      ),
+      index: 1,
+    );
   }
 }

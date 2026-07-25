@@ -28,13 +28,19 @@ class _PlayerShellState extends State<PlayerShell> {
       backgroundColor: OdinColors.canvas,
       appBar: OdinProAppBar(
         club: club,
+        subtitle: 'Espace Joueur · ODIN',
+        showLogo: true,
+        logoSize: 58,
+        accentColor: OdinColors.accent,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
+            tooltip: 'Notifications',
+            icon: const Icon(Icons.notifications_outlined, color: OdinColors.textSecondary),
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.logout_rounded),
+            tooltip: 'Déconnexion',
+            icon: const Icon(Icons.logout_rounded, color: OdinColors.textSecondary),
             onPressed: () => auth.logout(),
           ),
         ],
@@ -46,6 +52,7 @@ class _PlayerShellState extends State<PlayerShell> {
       bottomNavigationBar: OdinGlassNavBar(
         selectedIndex: index,
         onSelected: (i) => goToShellTab(context, i),
+        accentColor: OdinColors.accent,
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'Accueil'),
           NavigationDestination(icon: Icon(Icons.insights_outlined), selectedIcon: Icon(Icons.insights), label: 'Perf'),

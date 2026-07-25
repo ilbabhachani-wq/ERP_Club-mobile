@@ -26,6 +26,7 @@ class MenuScreen extends StatelessWidget {
     _MenuItem('Transferts', '', Icons.swap_horiz_rounded, '/transferts', OdinColors.playerCoral),
     _MenuItem('Documents', '', Icons.folder_open_outlined, '/documents', OdinColors.info),
     _MenuItem('Entraînement', '', Icons.fitness_center_rounded, '/entrainement', OdinColors.accent),
+    _MenuItem('Performances', '', Icons.insights_rounded, '/performances', OdinColors.playerCoral),
     _MenuItem('Analyse Match', '', Icons.analytics_outlined, '/analyse', OdinColors.warning),
     _MenuItem('Récompenses', '', Icons.emoji_events_outlined, '/recompenses', Color(0xFFD99A1F)),
     _MenuItem('Chimie', '', Icons.hub_outlined, '/chimie', OdinColors.success),

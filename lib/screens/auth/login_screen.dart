@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,10 @@ import '../../core/theme/odin_colors.dart';
 import '../../core/widgets/odin_logo.dart';
 import '../../core/widgets/odin_widgets.dart';
 import '../../providers/app_providers.dart';
+import '../../providers/analyste_provider.dart';
+import '../../providers/avatar_provider.dart';
+import '../../providers/scout_provider.dart';
+import '../../providers/viiv_provider.dart';
 
 const _featureTags = ['IA', 'Analyse', 'Performance', 'Recrutement'];
 
@@ -23,6 +28,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _shakeKey = GlobalKey<ShakeWidgetState>();
   bool _booted = false;
+  bool _showAuthOverlay = false;
+  String _roleLabel = 'Espace Club';
+  String _clubName = 'ODIN Club';
+  String? _pendingRoute;
+
+  static const _authSteps = [
+    'Connexion...',
+    'Authentification...',
+    'Chargement IA...',
+  ];
 
   @override
   void initState() {
@@ -45,16 +60,47 @@ class _LoginScreenState extends State<LoginScreen> {
     final ok = await auth.login(_email.text.trim(), _password.text);
     if (!mounted) return;
     if (ok) {
-      await context.read<JoueurDataProvider>().load(auth.user!);
-      if (mounted) context.go('/');
+      final user = auth.user!;
+      await context.read<AvatarProvider>().bindUser(user.email);
+      if (!mounted) return;
+      if (user.isAnalyste) {
+        await context.read<AnalysteDataProvider>().load();
+        if (!mounted) return;
+        await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
+      } else if (user.isScout) {
+        await context.read<ScoutDataProvider>().load();
+      } else {
+        await context.read<JoueurDataProvider>().load(user);
+        if (!mounted) return;
+        await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
+      }
+      if (!mounted) return;
+      setState(() {
+        _roleLabel = user.isAnalyste
+            ? 'Espace Analyste'
+            : user.isScout
+                ? 'Espace Scout'
+                : 'Espace Joueur';
+        _clubName = user.organization?.clubName ?? 'ODIN Club';
+        _pendingRoute = user.homeRoute;
+        _showAuthOverlay = true;
+      });
     } else {
       _shakeKey.currentState?.shake();
-      if (auth.error != null) {
+      if (auth.error != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(auth.error!)),
+          SnackBar(
+            content: Text(auth.error!),
+            backgroundColor: OdinColors.danger,
+          ),
         );
       }
     }
+  }
+
+  void _onAuthOverlayDone() {
+    final route = _pendingRoute;
+    if (route != null && mounted) context.go(route);
   }
 
   @override
@@ -77,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 420),
                       child: LoginTiltWrapper(
-                        enabled: _booted,
+                        enabled: _booted && !_showAuthOverlay,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -106,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 .slideY(begin: 0.2, end: 0),
                             const SizedBox(height: 8),
                             const Text(
-                              'Espace Joueur • SaaS Pro',
+                              'Espace Club • SaaS Pro',
                               style: TextStyle(
                                 color: OdinColors.textMuted,
                                 fontWeight: FontWeight.w600,
@@ -199,9 +245,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                           .slideY(begin: 0.2, end: 0),
                                       const SizedBox(height: 28),
                                       MorphLoadingButton(
-                                        loading: loggingIn,
+                                        loading: loggingIn || _showAuthOverlay,
                                         label: 'Se connecter',
-                                        onPressed: loggingIn ? null : _submit,
+                                        onPressed: (loggingIn || _showAuthOverlay) ? null : _submit,
                                       )
                                           .animate(delay: 560.ms)
                                           .fadeIn()
@@ -237,7 +283,158 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ).animate().fadeOut(delay: 700.ms, duration: 400.ms),
+          if (_showAuthOverlay)
+            _AuthSuccessOverlay(
+              roleLabel: _roleLabel,
+              clubName: _clubName,
+              steps: _authSteps,
+              onDone: _onAuthOverlayDone,
+            ),
         ],
+      ),
+    );
+  }
+}
+
+/// Overlay post-login aligné web (`AuthOverlay` LoginPage.tsx).
+class _AuthSuccessOverlay extends StatefulWidget {
+  const _AuthSuccessOverlay({
+    required this.roleLabel,
+    required this.clubName,
+    required this.steps,
+    required this.onDone,
+  });
+
+  final String roleLabel;
+  final String clubName;
+  final List<String> steps;
+  final VoidCallback onDone;
+
+  @override
+  State<_AuthSuccessOverlay> createState() => _AuthSuccessOverlayState();
+}
+
+class _AuthSuccessOverlayState extends State<_AuthSuccessOverlay> {
+  int _step = 0;
+  bool _welcome = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) setState(() => _step = 1);
+    });
+    Future<void>.delayed(const Duration(milliseconds: 1200), () {
+      if (mounted) setState(() => _step = 2);
+    });
+    Future<void>.delayed(const Duration(milliseconds: 1900), () {
+      if (mounted) setState(() => _welcome = true);
+    });
+    Future<void>.delayed(const Duration(milliseconds: 2900), () {
+      if (mounted) widget.onDone();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: ColoredBox(
+        color: const Color(0xE60D0D18),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Center(
+            child: AnimatedSwitcher(
+              duration: 350.ms,
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              child: !_welcome
+                  ? Column(
+                      key: const ValueKey('loading'),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const OdinLogo(width: 200, animated: false),
+                        const SizedBox(height: 20),
+                        Text(
+                          widget.roleLabel,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: OdinColors.accent),
+                            ),
+                            const SizedBox(width: 10),
+                            AnimatedSwitcher(
+                              duration: 280.ms,
+                              child: Text(
+                                widget.steps[_step.clamp(0, widget.steps.length - 1)],
+                                key: ValueKey(_step),
+                                style: const TextStyle(color: OdinColors.textMuted, fontSize: 14, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: 208,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(99),
+                            child: TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0, end: 1),
+                              duration: 1900.ms,
+                              curve: Curves.easeInOut,
+                              builder: (_, v, _) => LinearProgressIndicator(
+                                value: v,
+                                minHeight: 4,
+                                backgroundColor: Colors.white.withValues(alpha: 0.08),
+                                color: OdinColors.accent,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      key: const ValueKey('welcome'),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFF22C55E).withValues(alpha: 0.15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF22C55E).withValues(alpha: 0.45),
+                                blurRadius: 40,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.check_circle_rounded, size: 44, color: Color(0xFF22C55E)),
+                        )
+                            .animate()
+                            .scale(begin: const Offset(0, 0), end: const Offset(1, 1), curve: Curves.easeOutBack, duration: 500.ms),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'Bienvenue',
+                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+                        ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.2, end: 0),
+                        const SizedBox(height: 6),
+                        Text(
+                          '${widget.clubName} · ${widget.roleLabel}',
+                          style: const TextStyle(color: OdinColors.textMuted, fontSize: 14),
+                        ).animate().fadeIn(delay: 200.ms),
+                      ],
+                    ),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -31,19 +31,78 @@ class OdinUser {
     );
   }
 
+  /// True if this account can open the player mobile app.
+  bool get canAccessPlayerApp {
+    if (playerId != null && playerId!.isNotEmpty) return true;
+    const allowed = {
+      'joueur',
+      'analyste',
+      'coach',
+      'preparateur',
+      'medical',
+      'recruteur',
+      'scout',
+      'responsable',
+      'adminclub',
+      'finance',
+    };
+    return allowed.contains(role);
+  }
+
+  bool get isAnalyste => role == 'analyste';
+  bool get isScout => role == 'scout';
+  bool get isJoueur =>
+      role == 'joueur' || (playerId != null && playerId!.isNotEmpty && role != 'analyste' && role != 'scout');
+
+  /// Landing route after login / splash.
+  String get homeRoute {
+    if (isAnalyste) return '/analyste';
+    if (isScout) return '/scout';
+    return '/';
+  }
+
   static String _mapRole(Map<String, dynamic> json) {
+    // Aligné sur src/contexts/AuthContext.tsx (CLUB_MEMBER_ROLE_MAP)
     const clubMap = {
-      'Joueur': 'joueur',
+      'Club Admin': 'adminclub',
+      'Responsable': 'responsable',
+      'Préparateur Physique': 'preparateur',
+      'Analyste Performance': 'analyste',
+      'Recruteur': 'recruteur',
       'Coach': 'coach',
       'Médecin': 'medical',
+      'Scout': 'scout',
+      'Finance': 'finance',
+      'Joueur': 'joueur',
     };
     final memberRole = json['clubMemberRole'] as String?;
     if (memberRole != null && clubMap.containsKey(memberRole)) {
       return clubMap[memberRole]!;
     }
-    final backendRole = json['role'] as String?;
-    if (backendRole == 'ADMIN_CLUB') return 'adminclub';
-    if (backendRole == 'SUPER_ADMIN') return 'superadmin';
+
+    final backendRole = (json['role'] as String?)?.toUpperCase();
+    if (backendRole == 'SUPER_ADMIN' || backendRole == 'SUPERADMIN') {
+      return 'superadmin';
+    }
+    if (backendRole == 'ADMIN_CLUB' || backendRole == 'ADMINCLUB') {
+      return 'adminclub';
+    }
+    // Rôles déjà normalisés (session restaurée)
+    const normalized = {
+      'joueur',
+      'analyste',
+      'coach',
+      'preparateur',
+      'medical',
+      'recruteur',
+      'scout',
+      'responsable',
+      'adminclub',
+      'finance',
+      'superadmin',
+    };
+    final raw = (json['role'] as String?)?.toLowerCase();
+    if (raw != null && normalized.contains(raw)) return raw;
     return 'joueur';
   }
 
@@ -182,6 +241,40 @@ class BackendPlayer {
   }
 }
 
+class PerfEvolutionPoint {
+  const PerfEvolutionPoint({required this.month, required this.score});
+
+  final String month;
+  final double score;
+
+  factory PerfEvolutionPoint.fromJson(Map<String, dynamic> json) {
+    return PerfEvolutionPoint(
+      month: json['month'] as String? ?? '',
+      score: (json['score'] as num?)?.toDouble() ?? 0,
+    );
+  }
+}
+
+class GoalContributionSlice {
+  const GoalContributionSlice({
+    required this.name,
+    required this.value,
+    this.colorHex = '#FF6B57',
+  });
+
+  final String name;
+  final double value;
+  final String colorHex;
+
+  factory GoalContributionSlice.fromJson(Map<String, dynamic> json) {
+    return GoalContributionSlice(
+      name: json['name'] as String? ?? '',
+      value: (json['value'] as num?)?.toDouble() ?? 0,
+      colorHex: json['color'] as String? ?? '#FF6B57',
+    );
+  }
+}
+
 class PlayerStatsPayload {
   const PlayerStatsPayload({
     this.form = 0,
@@ -198,6 +291,8 @@ class PlayerStatsPayload {
     this.marketValue = '—',
     this.marketValueTrend = '+0%',
     this.fatiguePredicted = 0,
+    this.performanceEvolution = const [],
+    this.goalContribution = const [],
   });
 
   final int form;
@@ -214,6 +309,8 @@ class PlayerStatsPayload {
   final String marketValue;
   final String marketValueTrend;
   final int fatiguePredicted;
+  final List<PerfEvolutionPoint> performanceEvolution;
+  final List<GoalContributionSlice> goalContribution;
 
   factory PlayerStatsPayload.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const PlayerStatsPayload();
@@ -221,6 +318,8 @@ class PlayerStatsPayload {
     final season = json['seasonStats'] as Map<String, dynamic>?;
     final trend = json['marketValueTrend'] as Map<String, dynamic>?;
     final sess = json['trainingSessions'] as Map<String, dynamic>?;
+    final evo = json['performanceEvolution'] as List<dynamic>?;
+    final goals = json['goalContribution'] as List<dynamic>?;
     return PlayerStatsPayload(
       form: (json['form'] as num?)?.round() ?? 0,
       vitesse: (json['vitesse'] as num?)?.round() ?? 0,
@@ -240,6 +339,16 @@ class PlayerStatsPayload {
       marketValue: hero?['marketValue'] as String? ?? '—',
       marketValueTrend: trend?['change'] as String? ?? '+0%',
       fatiguePredicted: (sess?['fatiguePredicted'] as num?)?.round() ?? 0,
+      performanceEvolution: evo
+              ?.whereType<Map<String, dynamic>>()
+              .map(PerfEvolutionPoint.fromJson)
+              .toList() ??
+          const [],
+      goalContribution: goals
+              ?.whereType<Map<String, dynamic>>()
+              .map(GoalContributionSlice.fromJson)
+              .toList() ??
+          const [],
     );
   }
 }
@@ -258,6 +367,9 @@ class BackendMatchStat {
     this.sprints = 0,
     this.passAccuracy = 0,
     this.topSpeed = 0,
+    this.keyPasses = 0,
+    this.yellowCards = 0,
+    this.redCards = 0,
   });
 
   final String id;
@@ -272,6 +384,9 @@ class BackendMatchStat {
   final int sprints;
   final double passAccuracy;
   final double topSpeed;
+  final int keyPasses;
+  final int yellowCards;
+  final int redCards;
 
   factory BackendMatchStat.fromJson(Map<String, dynamic> json) {
     return BackendMatchStat(
@@ -287,6 +402,9 @@ class BackendMatchStat {
       sprints: (json['sprints'] as num?)?.round() ?? 0,
       passAccuracy: (json['passAccuracy'] as num?)?.toDouble() ?? 0,
       topSpeed: (json['topSpeed'] as num?)?.toDouble() ?? 0,
+      keyPasses: (json['keyPasses'] as num?)?.round() ?? 0,
+      yellowCards: (json['yellowCards'] as num?)?.round() ?? 0,
+      redCards: (json['redCards'] as num?)?.round() ?? 0,
     );
   }
 }

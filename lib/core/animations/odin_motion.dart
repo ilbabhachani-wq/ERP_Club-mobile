@@ -219,41 +219,46 @@ class MorphLoadingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: GestureDetector(
-        onTap: loading ? null : onPressed,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 320),
-          curve: Curves.easeInOut,
-          width: loading ? 52 : double.infinity,
-          height: 52,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [color, Color.lerp(color, OdinColors.accentStrong, 0.4)!],
-            ),
-            borderRadius: BorderRadius.circular(loading ? 26 : 14),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.4),
-                blurRadius: loading ? 12 : 22,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Center(
-            child: loading
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
-                  )
-                : Text(
-                    label,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fullW = constraints.maxWidth.isFinite ? constraints.maxWidth : 280.0;
+        return Center(
+          child: GestureDetector(
+            onTap: loading ? null : onPressed,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 320),
+              curve: Curves.easeInOut,
+              width: loading ? 52 : fullW,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color, Color.lerp(color, OdinColors.accentStrong, 0.4)!],
+                ),
+                borderRadius: BorderRadius.circular(loading ? 26 : 14),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.4),
+                    blurRadius: loading ? 12 : 22,
+                    offset: const Offset(0, 8),
                   ),
+                ],
+              ),
+              child: Center(
+                child: loading
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+                      )
+                    : Text(
+                        label,
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white),
+                      ),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

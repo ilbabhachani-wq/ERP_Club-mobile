@@ -68,9 +68,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     try {
       _user = await _auth.login(email, password);
-      if (_user!.role != 'joueur') {
+      if (!_user!.canAccessPlayerApp) {
         await logout();
-        _error = 'Cette application est réservée aux joueurs.';
+        _error = 'Cette application est réservée aux comptes club (joueurs & staff).';
         return false;
       }
       return true;
@@ -188,6 +188,18 @@ class JoueurDataProvider extends ChangeNotifier {
       final title = ev.title.toLowerCase();
       return names.any(title.contains);
     }).toList();
+  }
+
+  Future<void> refreshPlayerStats() async {
+    if (myPlayerId == null) return;
+    final pid = myPlayerId!;
+    final results = await Future.wait([
+      _club.getPlayerStats(pid).catchError((_) => const PlayerStatsPayload()),
+      _club.getMatchStats(pid).catchError((_) => <BackendMatchStat>[]),
+    ]);
+    playerStats = results[0] as PlayerStatsPayload;
+    matchStats = results[1] as List<BackendMatchStat>;
+    notifyListeners();
   }
 
   Future<void> refetchDocuments() async {

@@ -7,6 +7,7 @@ import '../../../core/theme/odin_colors.dart';
 import '../../../core/widgets/odin_widgets.dart';
 import '../../../models/player_models.dart';
 import '../../../models/viiv_metrics.dart';
+import 'viiv_model_viewer.dart';
 
 /// Hero profil Viiv GX17 — style WhoopHero web avec montre 3D animée.
 class ViivHeroProfile extends StatelessWidget {
@@ -28,49 +29,72 @@ class ViivHeroProfile extends StatelessWidget {
     final name = player?.name ?? metrics.deviceModel;
     final firstName = name.split(' ').first;
     final position = player?.position ?? 'Joueur';
-    final photo = player?.photoUrl;
     final rc = viivRecoveryColor(metrics.recovery);
 
     return GlassCard(
       raised: true,
       accentColor: const Color(0xFF22D3EE),
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // SaaS product header
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _PlayerAvatar(name: name, photoUrl: photo, color: rc),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF22D3EE), Color(0xFF0891B2)],
+                  ),
+                ),
+                child: const Icon(Icons.watch_rounded, color: Colors.black, size: 22),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            firstName,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.3),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        _LiveBadge(connected: metrics.connected),
-                      ],
+                    const Text(
+                      'VIIV GX17',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                     Text(
-                      '$position · Viiv GX17',
-                      style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                      'Wearable Performance · $firstName · $position',
+                      style: const TextStyle(color: OdinColors.textMuted, fontSize: 12, height: 1.3),
                     ),
                   ],
                 ),
               ),
-              _SyncButton(syncing: syncing, onSync: onSync),
+              _LiveBadge(connected: metrics.connected),
             ],
           ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (metrics.dataSourceLabel.isNotEmpty)
+                _InfoChip(icon: Icons.cloud_done_outlined, label: metrics.dataSourceLabel),
+              _InfoChip(icon: Icons.battery_5_bar_rounded, label: '${metrics.battery}%'),
+              _InfoChip(icon: Icons.memory_rounded, label: metrics.firmware),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: _SyncButton(syncing: syncing, onSync: onSync),
+          ),
           const SizedBox(height: 18),
-          ViivGx17WatchShowcase(
+          ViivGx17ModelViewer(
+            height: 400,
             recovery: metrics.recovery,
             energy: metrics.viivEnergy,
             battery: metrics.battery,
@@ -127,48 +151,13 @@ class ViivHeroProfile extends StatelessWidget {
             runSpacing: 8,
             children: [
               _InfoChip(icon: Icons.watch_rounded, label: metrics.deviceModel),
-              _InfoChip(icon: Icons.memory_rounded, label: metrics.firmware),
-              _InfoChip(icon: Icons.battery_5_bar_rounded, label: '${metrics.battery}%'),
+              _InfoChip(icon: Icons.tag, label: metrics.deviceId),
               _InfoChip(icon: Icons.sync_rounded, label: metrics.lastSync),
             ],
           ),
         ],
       ),
     ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.04, end: 0);
-  }
-}
-
-class _PlayerAvatar extends StatelessWidget {
-  const _PlayerAvatar({required this.name, this.photoUrl, required this.color});
-
-  final String name;
-  final String? photoUrl;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final initials = name.trim().split(' ').map((p) => p.isNotEmpty ? p[0] : '').take(2).join().toUpperCase();
-    return Container(
-      width: 52,
-      height: 52,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.6), width: 2),
-        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.25), blurRadius: 12)],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: photoUrl != null
-          ? Image.network(photoUrl!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _initials(initials))
-          : _initials(initials),
-    );
-  }
-
-  Widget _initials(String initials) {
-    return Container(
-      color: const Color(0xFF1A1A28),
-      alignment: Alignment.center,
-      child: Text(initials, style: TextStyle(fontWeight: FontWeight.w900, color: color, fontSize: 16)),
-    );
   }
 }
 
@@ -335,26 +324,36 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.white.withValues(alpha: 0.05),
-        border: Border.all(color: const Color(0xFF22D3EE).withValues(alpha: 0.15)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: const Color(0xFF22D3EE)),
-          const SizedBox(width: 6),
-          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: OdinColors.textSecondary)),
-        ],
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 220),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: Colors.white.withValues(alpha: 0.05),
+          border: Border.all(color: const Color(0xFF22D3EE).withValues(alpha: 0.15)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 12, color: const Color(0xFF22D3EE)),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: OdinColors.textSecondary),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// Showcase montre — glow + pseudo-3D animé.
+/// Showcase montre — fallback peinte (hors viewer GLB).
 class ViivGx17WatchShowcase extends StatefulWidget {
   const ViivGx17WatchShowcase({
     super.key,

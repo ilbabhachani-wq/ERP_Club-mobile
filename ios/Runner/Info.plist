@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>ODIN connecte votre montre Viiv GX17 pour synchroniser les données santé du joueur.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>ODIN utilise le Bluetooth pour appairer et synchroniser la Viiv GX17.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>La localisation est requise sur Android/iOS pour scanner les appareils Bluetooth à proximité.</string>
 </dict>
 </plist>
