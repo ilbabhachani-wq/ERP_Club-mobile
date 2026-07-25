@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import '../../core/animations/odin_animations.dart';
 import '../../core/animations/odin_motion.dart';
 import '../../core/theme/odin_colors.dart';
-import '../../core/widgets/fifa_player_card.dart';
 import '../../core/widgets/fifa_card_utils.dart';
+import '../../core/widgets/fifa_player_card.dart';
 import '../../core/widgets/odin_widgets.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/viiv_provider.dart';
@@ -133,22 +133,53 @@ class JoueurDashboardScreen extends StatelessWidget {
               const SizedBox(height: 12),
               const SectionTitle('Récompenses'),
               SizedBox(
-                height: 90,
+                height: 124,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: data.awards.take(5).length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
                   itemBuilder: (_, i) {
                     final a = data.awards[i];
-                    return GlassCard(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(a.icon, style: const TextStyle(fontSize: 24)),
-                          const SizedBox(height: 4),
-                          Text(a.title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                        ],
+                    final color = _hexColor(a.color);
+                    return SizedBox(
+                      width: 108,
+                      child: GlassCard(
+                        accentColor: color,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: [color.withValues(alpha: 0.22), color.withValues(alpha: 0.08)],
+                                ),
+                                border: Border.all(color: color.withValues(alpha: 0.25)),
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(_awardIcon(a), size: 18, color: color),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              a.title,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, height: 1.2),
+                            ),
+                            if (a.season.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                a.season,
+                                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: OdinColors.textMuted),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -159,6 +190,37 @@ class JoueurDashboardScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static IconData _awardIcon(dynamic a) {
+    final icon = (a.icon as String? ?? '');
+    final type = (a.awardType as String? ?? '').toLowerCase();
+    final title = (a.title as String? ?? '').toLowerCase();
+
+    if (icon.contains('🥇') || icon.contains('🏅') || type.contains('mvp') || title.contains('mois')) {
+      return Icons.military_tech_rounded;
+    }
+    if (icon.contains('⚽') || title.contains('buteur') || title.contains('but')) {
+      return Icons.sports_soccer_rounded;
+    }
+    if (icon.contains('🤝') || title.contains('fair-play') || title.contains('fair play')) {
+      return Icons.handshake_rounded;
+    }
+    if (icon.contains('🎯') || title.contains('passe')) {
+      return Icons.gps_fixed_rounded;
+    }
+    if (icon.contains('🛡') || title.contains('défense') || title.contains('defense')) {
+      return Icons.shield_rounded;
+    }
+    if (icon.contains('⭐') || icon.contains('🌟') || title.contains('sélection') || title.contains('selection')) {
+      return Icons.star_rounded;
+    }
+    return Icons.emoji_events_rounded;
+  }
+
+  static Color _hexColor(String hex) {
+    final clean = hex.replaceFirst('#', '');
+    return Color(int.parse('FF$clean', radix: 16));
   }
 
   static Color _loadColor(int load) {
