@@ -85,7 +85,7 @@ class JoueurFormationScreen extends StatelessWidget {
     return Column(
       children: [
         Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: color)),
-        Text(label, style: const TextStyle(color: OdinColors.textMuted, fontSize: 12)),
+        Text(label, style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
       ],
     );
   }

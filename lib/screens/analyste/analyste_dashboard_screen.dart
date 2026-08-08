@@ -216,7 +216,7 @@ class AnalysteDashboardScreen extends StatelessWidget {
               GlassCard(
                 onTap: () => auth.logout(),
                 accentColor: OdinColors.danger,
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(Icons.logout_rounded, color: OdinColors.danger),
                     SizedBox(width: 12),
@@ -260,7 +260,7 @@ class AnalysteDashboardScreen extends StatelessWidget {
               const SizedBox(height: 14),
               const Text('Photo de profil', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
               const SizedBox(height: 4),
-              const Text(
+               Text(
                 'Upload via ImgBB',
                 style: TextStyle(fontSize: 12, color: OdinColors.textMuted),
               ),
@@ -344,7 +344,7 @@ class AnalysteDashboardScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+             Text(
               'Créez une clé gratuite sur api.imgbb.com puis collez-la ici.',
               style: TextStyle(fontSize: 13, color: OdinColors.textMuted),
             ),
@@ -412,7 +412,7 @@ class _ProfileHero extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: OdinColors.accent.withValues(alpha: 0.28)),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment(-0.8, -1),
           end: Alignment(1, 1.2),
           colors: [
@@ -512,7 +512,7 @@ class _ProfileHero extends StatelessWidget {
                               child: avatarUrl == null
                                   ? Text(
                                       initials,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 28,
                                         fontWeight: FontWeight.w900,
                                         color: Colors.white,
@@ -548,7 +548,7 @@ class _ProfileHero extends StatelessWidget {
                                     shape: BoxShape.circle,
                                     border: Border.all(color: OdinColors.canvas, width: 2),
                                   ),
-                                  child: const Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white),
+                                  child: Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white),
                                 ),
                               ),
                           ],
@@ -574,7 +574,7 @@ class _ProfileHero extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(color: OdinColors.canvas, width: 2.5),
                       ),
-                      child: const Icon(Icons.check_rounded, size: 12, color: Colors.white),
+                      child: Icon(Icons.check_rounded, size: 12, color: Colors.white),
                     ),
                   )
                       .animate(delay: 400.ms)
@@ -591,7 +591,7 @@ class _ProfileHero extends StatelessWidget {
               Text(
                 displayName,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
               )
                   .animate(delay: 120.ms)
                   .fadeIn(duration: 400.ms)
@@ -628,7 +628,7 @@ class _ProfileHero extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   email,
-                  style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                  style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                 ).animate(delay: 260.ms).fadeIn(),
               ],
               const SizedBox(height: 14),
@@ -657,7 +657,7 @@ class _ProfileHero extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   league,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: OdinColors.textSecondary,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -723,7 +723,7 @@ class _SectionLabel extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           text.toUpperCase(),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w900,
             letterSpacing: 1.4,
@@ -779,7 +779,7 @@ class _StatChip extends StatelessWidget {
                   label.toUpperCase(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 9,
                     letterSpacing: 0.5,
                     color: OdinColors.textMuted,
@@ -869,7 +869,7 @@ class _InfoRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(data.label, style: const TextStyle(color: OdinColors.textMuted, fontSize: 12)),
+            child: Text(data.label, style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
           ),
           Flexible(
             child: Text(

@@ -85,7 +85,7 @@ class _JoueurCompareScreenState extends State<JoueurCompareScreen> {
             child: Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
           Expanded(

@@ -299,7 +299,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                                   Flexible(
                                     child: Text(
                                       '$homeName vs $awayName',
-                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -316,7 +316,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                                     : _feedSource == 'sim'
                                         ? 'Sim unique match · ML — touchez un crest'
                                         : 'Live Match · ML — touchez un crest',
-                                style: const TextStyle(fontSize: 11, color: OdinColors.textMuted),
+                                style: TextStyle(fontSize: 11, color: OdinColors.textMuted),
                               ),
                             ],
                           ),
@@ -324,7 +324,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                         IconButton(
                           tooltip: 'Inverser',
                           onPressed: _swapTeams,
-                          icon: const Icon(Icons.swap_horiz_rounded, color: OdinColors.textSecondary),
+                          icon: Icon(Icons.swap_horiz_rounded, color: OdinColors.textSecondary),
                         ),
                       ],
                     ),
@@ -343,7 +343,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                             children: [
                               Text(
                                 '$_homeScore  -  $_awayScore',
-                                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+                                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
                               ),
                               const SizedBox(height: 6),
                               Container(
@@ -462,7 +462,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                       style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                     Text(
                       'Vert = victoire domicile · Bleu = nul · Rouge = extérieur',
                       style: TextStyle(fontSize: 10, color: OdinColors.textMuted),
                     ),
@@ -470,7 +470,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                     SizedBox(
                       height: 170,
                       child: displayed.length < 2
-                          ? const Center(child: Text('En attente de données…', style: TextStyle(color: OdinColors.textMuted, fontSize: 12)))
+                          ? Center(child: Text('En attente de données…', style: TextStyle(color: OdinColors.textMuted, fontSize: 12)))
                           : LineChart(
                               LineChartData(
                                 minY: 0,
@@ -495,7 +495,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                                       interval: 25,
                                       getTitlesWidget: (v, _) => Text(
                                         '${v.toInt()}',
-                                        style: const TextStyle(color: OdinColors.textMuted, fontSize: 9),
+                                        style: TextStyle(color: OdinColors.textMuted, fontSize: 9),
                                       ),
                                     ),
                                   ),
@@ -506,7 +506,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                                       interval: 15,
                                       getTitlesWidget: (v, _) => Text(
                                         "${v.toInt()}'",
-                                        style: const TextStyle(color: OdinColors.textMuted, fontSize: 9),
+                                        style: TextStyle(color: OdinColors.textMuted, fontSize: 9),
                                       ),
                                     ),
                                   ),
@@ -517,7 +517,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                                     getTooltipItems: (spots) => spots
                                         .map((s) => LineTooltipItem(
                                               '${s.y.round()}%',
-                                              const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12),
+                                              TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12),
                                             ))
                                         .toList(),
                                   ),
@@ -615,7 +615,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                                       reservedSize: 28,
                                       getTitlesWidget: (v, _) => Text(
                                         '${v.toInt()}',
-                                        style: const TextStyle(color: OdinColors.textMuted, fontSize: 9),
+                                        style: TextStyle(color: OdinColors.textMuted, fontSize: 9),
                                       ),
                                     ),
                                   ),
@@ -626,7 +626,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                                       interval: 15,
                                       getTitlesWidget: (v, _) => Text(
                                         "${v.toInt()}'",
-                                        style: const TextStyle(color: OdinColors.textMuted, fontSize: 9),
+                                        style: TextStyle(color: OdinColors.textMuted, fontSize: 9),
                                       ),
                                     ),
                                   ),
@@ -682,7 +682,7 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                     const Text('Événements', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
                     const SizedBox(height: 10),
                     if (events.isEmpty)
-                      const Text('Aucun événement encore', style: TextStyle(color: OdinColors.textMuted, fontSize: 12))
+                       Text('Aucun événement encore', style: TextStyle(color: OdinColors.textMuted, fontSize: 12))
                     else
                       ...events.map((ev) {
                         final color = switch (ev.type.toLowerCase()) {
@@ -719,9 +719,9 @@ class _AnalysteLiveScreenState extends State<AnalysteLiveScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(ev.player, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                                      Text(ev.player, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
                                       if (ev.desc.isNotEmpty)
-                                        Text(ev.desc, style: const TextStyle(color: OdinColors.textMuted, fontSize: 10)),
+                                        Text(ev.desc, style: TextStyle(color: OdinColors.textMuted, fontSize: 10)),
                                     ],
                                   ),
                                 ),
@@ -946,11 +946,11 @@ class _TeamPickerSheetState extends State<_TeamPickerSheet> {
               ),
             ),
             const SizedBox(height: 14),
-            Text(widget.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+            Text(widget.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
             const SizedBox(height: 4),
             Text(
               '${filtered.length} club${filtered.length > 1 ? 's' : ''} · monde entier',
-              style: const TextStyle(fontSize: 12, color: OdinColors.textMuted),
+              style: TextStyle(fontSize: 12, color: OdinColors.textMuted),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -958,7 +958,7 @@ class _TeamPickerSheetState extends State<_TeamPickerSheet> {
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 hintText: 'Rechercher un club…',
-                prefixIcon: const Icon(Icons.search_rounded, color: OdinColors.textMuted),
+                prefixIcon: Icon(Icons.search_rounded, color: OdinColors.textMuted),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
@@ -1086,7 +1086,7 @@ class _KpiTile extends StatelessWidget {
                 ),
                 Text(
                   label,
-                  style: const TextStyle(fontSize: 9, color: OdinColors.textMuted),
+                  style: TextStyle(fontSize: 9, color: OdinColors.textMuted),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1153,7 +1153,7 @@ class _LegendDot extends StatelessWidget {
       children: [
         Container(width: 8, height: 8, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
         const SizedBox(width: 6),
-        Text(label, style: const TextStyle(fontSize: 10, color: OdinColors.textMuted)),
+        Text(label, style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
       ],
     );
   }

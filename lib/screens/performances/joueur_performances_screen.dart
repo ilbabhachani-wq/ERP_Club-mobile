@@ -69,7 +69,7 @@ class _JoueurPerformancesScreenState extends State<JoueurPerformancesScreen>
                   ),
                   Text(
                     '${player.name} · OVR ${player.ovr}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                       color: OdinColors.textMuted,
@@ -148,7 +148,7 @@ class _PillTabs extends StatelessWidget {
         dividerColor: Colors.transparent,
         indicator: BoxDecoration(
           borderRadius: BorderRadius.circular(11),
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             colors: [OdinColors.playerCoral, OdinColors.accent],
           ),
           boxShadow: [
@@ -240,12 +240,12 @@ class _VueTab extends StatelessWidget {
                           children: [
                             Text(
                               'vs ${last.opponent}',
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               '${last.result} · ${_fmtDate(last.matchDate)}',
-                              style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                              style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                             ),
                           ],
                         ),
@@ -300,7 +300,7 @@ class _VueTab extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: OdinColors.textMuted),
+                      Icon(Icons.arrow_forward_ios_rounded, size: 12, color: OdinColors.textMuted),
                     ],
                   ),
                 ],
@@ -324,7 +324,7 @@ class _VueTab extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         OdinAnimations.fadeUp(
-          const Center(
+          Center(
             child: Text(
               'Zones d\'activité — saison en cours',
               style: TextStyle(color: OdinColors.textMuted, fontSize: 11),
@@ -378,7 +378,7 @@ class _TendancesTab extends StatelessWidget {
             child: SizedBox(
               height: 220,
               child: fallbackEvo.isEmpty
-                  ? const Center(child: Text('Données en cours…', style: TextStyle(color: OdinColors.textMuted)))
+                  ? Center(child: Text('Données en cours…', style: TextStyle(color: OdinColors.textMuted)))
                   : LineChart(
                       LineChartData(
                         minY: 55,
@@ -400,7 +400,7 @@ class _TendancesTab extends StatelessWidget {
                               reservedSize: 28,
                               getTitlesWidget: (v, _) => Text(
                                 v.toInt().toString(),
-                                style: const TextStyle(color: OdinColors.textMuted, fontSize: 10),
+                                style: TextStyle(color: OdinColors.textMuted, fontSize: 10),
                               ),
                             ),
                           ),
@@ -414,7 +414,7 @@ class _TendancesTab extends StatelessWidget {
                                   padding: const EdgeInsets.only(top: 6),
                                   child: Text(
                                     fallbackEvo[i].month,
-                                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 9),
+                                    style: TextStyle(color: OdinColors.textMuted, fontSize: 9),
                                   ),
                                 );
                               },
@@ -471,7 +471,7 @@ class _TendancesTab extends StatelessWidget {
             child: SizedBox(
               height: 180,
               child: ratings.isEmpty
-                  ? const Center(child: Text('Aucun match', style: TextStyle(color: OdinColors.textMuted)))
+                  ? Center(child: Text('Aucun match', style: TextStyle(color: OdinColors.textMuted)))
                   : BarChart(
                       BarChartData(
                         maxY: 10,
@@ -494,7 +494,7 @@ class _TendancesTab extends StatelessWidget {
                               reservedSize: 22,
                               getTitlesWidget: (v, _) => Text(
                                 v.toInt().toString(),
-                                style: const TextStyle(color: OdinColors.textMuted, fontSize: 10),
+                                style: TextStyle(color: OdinColors.textMuted, fontSize: 10),
                               ),
                             ),
                           ),
@@ -509,7 +509,7 @@ class _TendancesTab extends StatelessWidget {
                                   padding: const EdgeInsets.only(top: 6),
                                   child: Text(
                                     label.length > 6 ? label.substring(0, 6) : label,
-                                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 9),
+                                    style: TextStyle(color: OdinColors.textMuted, fontSize: 9),
                                   ),
                                 );
                               },
@@ -562,7 +562,7 @@ class _TendancesTab extends StatelessWidget {
                             color: _parseHex(s.colorHex),
                             radius: 52,
                             title: s.value.toInt().toString(),
-                            titleStyle: const TextStyle(
+                            titleStyle: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
@@ -593,7 +593,7 @@ class _TendancesTab extends StatelessWidget {
                           const SizedBox(width: 6),
                           Text(
                             s.name,
-                            style: const TextStyle(color: OdinColors.textMuted, fontSize: 11),
+                            style: TextStyle(color: OdinColors.textMuted, fontSize: 11),
                           ),
                         ],
                       ),
@@ -725,7 +725,7 @@ class _ProfilTab extends StatelessWidget {
                         reservedSize: 28,
                         getTitlesWidget: (v, _) => Text(
                           v.toInt().toString(),
-                          style: const TextStyle(color: OdinColors.textMuted, fontSize: 10),
+                          style: TextStyle(color: OdinColors.textMuted, fontSize: 10),
                         ),
                       ),
                     ),
@@ -739,7 +739,7 @@ class _ProfilTab extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
                               attrs[i].$1.substring(0, 3).toUpperCase(),
-                              style: const TextStyle(color: OdinColors.textMuted, fontSize: 9),
+                              style: TextStyle(color: OdinColors.textMuted, fontSize: 9),
                             ),
                           );
                         },
@@ -824,10 +824,10 @@ class _AnalyseTab extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(Icons.analytics_rounded, color: OdinColors.accent),
+                  child: Icon(Icons.analytics_rounded, color: OdinColors.accent),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -840,7 +840,7 @@ class _AnalyseTab extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: OdinColors.textMuted),
+                Icon(Icons.chevron_right_rounded, color: OdinColors.textMuted),
               ],
             ),
           ),
@@ -849,7 +849,7 @@ class _AnalyseTab extends StatelessWidget {
         const SizedBox(height: 18),
         OdinAnimations.fadeUp(const SectionTitle('10 derniers matchs'), index: 1),
         if (matches.isEmpty)
-          const GlassCard(
+          GlassCard(
             child: Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
@@ -874,15 +874,15 @@ class _AnalyseTab extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('vs ${m.opponent}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                            Text('vs ${m.opponent}', style: TextStyle(fontWeight: FontWeight.w700)),
                             Text(
                               '${m.result} · ${m.goals}G ${m.assists}A · ${m.keyPasses} clés · ${m.minutes}\'',
-                              style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                              style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right_rounded, size: 18, color: OdinColors.textMuted),
+                      Icon(Icons.chevron_right_rounded, size: 18, color: OdinColors.textMuted),
                     ],
                   ),
                 ),
@@ -918,7 +918,7 @@ class _MiniStat extends StatelessWidget {
         children: [
           Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: color)),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(fontSize: 9, color: OdinColors.textMuted)),
+          Text(label, style: TextStyle(fontSize: 9, color: OdinColors.textMuted)),
         ],
       ),
     );
@@ -964,7 +964,7 @@ class _LegendDot extends StatelessWidget {
       children: [
         Container(width: 10, height: 10, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
         const SizedBox(width: 6),
-        Text(label, style: const TextStyle(color: OdinColors.textMuted, fontSize: 11)),
+        Text(label, style: TextStyle(color: OdinColors.textMuted, fontSize: 11)),
       ],
     );
   }
@@ -987,10 +987,10 @@ class _CompareRow extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(label, style: const TextStyle(fontSize: 12, color: OdinColors.textMuted))),
-              Text('$me', style: const TextStyle(fontWeight: FontWeight.w800, color: OdinColors.playerCoral)),
-              const Text('  /  ', style: TextStyle(color: OdinColors.textMuted)),
-              Text('$other', style: const TextStyle(fontWeight: FontWeight.w700, color: OdinColors.textSecondary)),
+              Expanded(child: Text(label, style: TextStyle(fontSize: 12, color: OdinColors.textMuted))),
+              Text('$me', style: TextStyle(fontWeight: FontWeight.w800, color: OdinColors.playerCoral)),
+               Text('  /  ', style: TextStyle(color: OdinColors.textMuted)),
+              Text('$other', style: TextStyle(fontWeight: FontWeight.w700, color: OdinColors.textSecondary)),
             ],
           ),
           const SizedBox(height: 6),

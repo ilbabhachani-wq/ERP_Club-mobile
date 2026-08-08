@@ -38,7 +38,7 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                 const SizedBox(height: 12),
                 const Text('Aucune analyse disponible', style: TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
-                const Text(
+                 Text(
                   'Les stats match apparaîtront ici',
                   style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                 ),
@@ -76,7 +76,7 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                         context.go('/performances');
                       }
                     },
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                    icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                   ),
                   const Expanded(
                     child: Text(
@@ -90,7 +90,7 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
             ),
             const SizedBox(height: 4),
             OdinAnimations.fadeUp(
-              const Text(
+               Text(
                 'KPIs physiques · mi-temps · heatmap',
                 style: TextStyle(color: OdinColors.textMuted, fontSize: 13),
               ),
@@ -116,7 +116,7 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           gradient: selected
-                              ? const LinearGradient(colors: [OdinColors.playerCoral, OdinColors.accent])
+                              ? LinearGradient(colors: [OdinColors.playerCoral, OdinColors.accent])
                               : null,
                           color: selected ? null : Colors.white.withValues(alpha: 0.05),
                           border: Border.all(
@@ -177,12 +177,12 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                                 children: [
                                   Text(
                                     'vs ${m.opponent}',
-                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     _longDate(m.matchDate),
-                                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                                    style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                                   ),
                                 ],
                               ),
@@ -192,7 +192,7 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                               children: [
                                 Text(
                                   m.result,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w900,
                                     color: OdinColors.accent,
@@ -201,7 +201,7 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                                 const SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    const Text('Note ', style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
+                                     Text('Note ', style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
                                     Text(
                                       m.rating.toStringAsFixed(1),
                                       style: TextStyle(
@@ -209,7 +209,7 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                                         color: _ratingColor(m.rating),
                                       ),
                                     ),
-                                    const Text('/10', style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
+                                     Text('/10', style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
                                   ],
                                 ),
                               ],
@@ -292,7 +292,7 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                             const SizedBox(height: 10),
                             Text(
                               'Zones d\'activité — vs ${m.opponent}',
-                              style: const TextStyle(color: OdinColors.textMuted, fontSize: 11),
+                              style: TextStyle(color: OdinColors.textMuted, fontSize: 11),
                             ),
                           ],
                         ),
@@ -370,7 +370,7 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                                     reservedSize: 28,
                                     getTitlesWidget: (v, _) => Text(
                                       v.toInt().toString(),
-                                      style: const TextStyle(color: OdinColors.textMuted, fontSize: 10),
+                                      style: TextStyle(color: OdinColors.textMuted, fontSize: 10),
                                     ),
                                   ),
                                 ),
@@ -383,7 +383,7 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                                         padding: const EdgeInsets.only(top: 8),
                                         child: Text(
                                           label,
-                                          style: const TextStyle(color: OdinColors.textMuted, fontSize: 11),
+                                          style: TextStyle(color: OdinColors.textMuted, fontSize: 11),
                                         ),
                                       );
                                     },
@@ -417,14 +417,14 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                             Expanded(
                               child: Text(
                                 '1ère MT · $half1Sprints sprints · $half1Dist km',
-                                style: const TextStyle(fontSize: 11, color: OdinColors.textSecondary),
+                                style: TextStyle(fontSize: 11, color: OdinColors.textSecondary),
                               ),
                             ),
                             Expanded(
                               child: Text(
                                 '2ème MT · $half2Sprints sprints · $half2Dist km',
                                 textAlign: TextAlign.end,
-                                style: const TextStyle(fontSize: 11, color: OdinColors.textSecondary),
+                                style: TextStyle(fontSize: 11, color: OdinColors.textSecondary),
                               ),
                             ),
                           ],
@@ -451,7 +451,7 @@ class _JoueurAnalysisScreenState extends State<JoueurAnalysisScreen> {
                                   ),
                                   child: Text(
                                     p.name.split(' ').last,
-                                    style: const TextStyle(fontSize: 12, color: OdinColors.textMuted),
+                                    style: TextStyle(fontSize: 12, color: OdinColors.textMuted),
                                   ),
                                 ),
                             ],
@@ -514,7 +514,7 @@ class _MetricTile extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(color: OdinColors.textMuted, fontSize: 11),
+              style: TextStyle(color: OdinColors.textMuted, fontSize: 11),
             ),
             const SizedBox(height: 6),
             TweenAnimationBuilder<double>(
@@ -572,7 +572,7 @@ class _SmallStat extends StatelessWidget {
           children: [
             Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: color)),
             const SizedBox(height: 2),
-            Text(label, style: const TextStyle(fontSize: 10, color: OdinColors.textMuted)),
+            Text(label, style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
           ],
         ),
       ),
@@ -597,7 +597,7 @@ class _Legend extends StatelessWidget {
           decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
         ),
         const SizedBox(width: 6),
-        Text(label, style: const TextStyle(color: OdinColors.textMuted, fontSize: 11)),
+        Text(label, style: TextStyle(color: OdinColors.textMuted, fontSize: 11)),
       ],
     );
   }

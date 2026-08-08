@@ -10,6 +10,8 @@ import '../../core/widgets/odin_widgets.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/analyste_provider.dart';
 import '../../providers/avatar_provider.dart';
+import '../../providers/preparateur_provider.dart';
+import '../../providers/responsable_provider.dart';
 import '../../providers/scout_provider.dart';
 import '../../providers/viiv_provider.dart';
 
@@ -69,6 +71,12 @@ class _LoginScreenState extends State<LoginScreen> {
         await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
       } else if (user.isScout) {
         await context.read<ScoutDataProvider>().load();
+      } else if (user.isPreparateur) {
+        await context.read<PreparateurDataProvider>().load();
+      } else if (user.isResponsable) {
+        await context.read<ResponsableDataProvider>().load(
+              orgId: user.organization?.id,
+            );
       } else {
         await context.read<JoueurDataProvider>().load(user);
         if (!mounted) return;
@@ -80,7 +88,11 @@ class _LoginScreenState extends State<LoginScreen> {
             ? 'Espace Analyste'
             : user.isScout
                 ? 'Espace Scout'
-                : 'Espace Joueur';
+                : user.isPreparateur
+                    ? 'Espace Préparateur'
+                    : user.isResponsable
+                        ? 'Espace Responsable'
+                        : 'Espace Joueur';
         _clubName = user.organization?.clubName ?? 'ODIN Club';
         _pendingRoute = user.homeRoute;
         _showAuthOverlay = true;
@@ -151,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 .fadeIn(duration: 420.ms)
                                 .slideY(begin: 0.2, end: 0),
                             const SizedBox(height: 8),
-                            const Text(
+                             Text(
                               'Espace Club • SaaS Pro',
                               style: TextStyle(
                                 color: OdinColors.textMuted,
@@ -178,7 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   child: Text(
                                     e.value,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                       color: OdinColors.textSecondary,
@@ -207,7 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           .fadeIn()
                                           .slideX(begin: -0.08, end: 0),
                                       const SizedBox(height: 6),
-                                      const Text(
+                                       Text(
                                         'Accédez à votre espace personnel',
                                         style: TextStyle(color: OdinColors.textMuted, fontSize: 14, height: 1.4),
                                       ),
@@ -356,7 +368,7 @@ class _AuthSuccessOverlayState extends State<_AuthSuccessOverlay> {
                         const SizedBox(height: 20),
                         Text(
                           widget.roleLabel,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: 14),
                         Row(
@@ -373,7 +385,7 @@ class _AuthSuccessOverlayState extends State<_AuthSuccessOverlay> {
                               child: Text(
                                 widget.steps[_step.clamp(0, widget.steps.length - 1)],
                                 key: ValueKey(_step),
-                                style: const TextStyle(color: OdinColors.textMuted, fontSize: 14, fontWeight: FontWeight.w600),
+                                style: TextStyle(color: OdinColors.textMuted, fontSize: 14, fontWeight: FontWeight.w600),
                               ),
                             ),
                           ],
@@ -416,7 +428,7 @@ class _AuthSuccessOverlayState extends State<_AuthSuccessOverlay> {
                               ),
                             ],
                           ),
-                          child: const Icon(Icons.check_circle_rounded, size: 44, color: Color(0xFF22C55E)),
+                          child: Icon(Icons.check_circle_rounded, size: 44, color: Color(0xFF22C55E)),
                         )
                             .animate()
                             .scale(begin: const Offset(0, 0), end: const Offset(1, 1), curve: Curves.easeOutBack, duration: 500.ms),
@@ -428,7 +440,7 @@ class _AuthSuccessOverlayState extends State<_AuthSuccessOverlay> {
                         const SizedBox(height: 6),
                         Text(
                           '${widget.clubName} · ${widget.roleLabel}',
-                          style: const TextStyle(color: OdinColors.textMuted, fontSize: 14),
+                          style: TextStyle(color: OdinColors.textMuted, fontSize: 14),
                         ).animate().fadeIn(delay: 200.ms),
                       ],
                     ),

@@ -201,7 +201,7 @@ class _AnalysteFatigueScreenState extends State<AnalysteFatigueScreen> {
               ),
               const SizedBox(height: 12),
               if (team.isEmpty)
-                const Text('Aucune donnée', style: TextStyle(color: OdinColors.textMuted))
+                 Text('Aucune donnée', style: TextStyle(color: OdinColors.textMuted))
               else
                 Row(
                   children: [
@@ -213,7 +213,7 @@ class _AnalysteFatigueScreenState extends State<AnalysteFatigueScreen> {
                             children: [
                               Text(
                                 d.interval,
-                                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: OdinColors.textMuted),
+                                style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: OdinColors.textMuted),
                               ),
                               const SizedBox(height: 6),
                               _HeatCell(value: d.fatigue),
@@ -226,21 +226,21 @@ class _AnalysteFatigueScreenState extends State<AnalysteFatigueScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Text('Faible', style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
+                   Text('Faible', style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Container(
                       height: 6,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(99),
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [Color(0xFF22C55E), Color(0xFFF59E0B), Color(0xFFFF7A00), Color(0xFFEF4444)],
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text('Critique', style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
+                   Text('Critique', style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
                 ],
               ),
             ],
@@ -359,7 +359,7 @@ class _AnalysteFatigueScreenState extends State<AnalysteFatigueScreen> {
       ),
       const SizedBox(height: 12),
       if (selected == null)
-        const GlassCard(child: Text('Aucun joueur', style: TextStyle(color: OdinColors.textMuted)))
+        GlassCard(child: Text('Aucun joueur', style: TextStyle(color: OdinColors.textMuted)))
       else
         OdinAnimations.fadeUp(
           GlassCard(
@@ -370,7 +370,7 @@ class _AnalysteFatigueScreenState extends State<AnalysteFatigueScreen> {
               children: [
                 Text(
                   '${selected.name} — Fatigue par période',
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -381,11 +381,11 @@ class _AnalysteFatigueScreenState extends State<AnalysteFatigueScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 3),
                           child: Column(
                             children: [
-                              Text(d.interval, style: const TextStyle(fontSize: 9, color: OdinColors.textMuted, fontWeight: FontWeight.w700)),
+                              Text(d.interval, style: TextStyle(fontSize: 9, color: OdinColors.textMuted, fontWeight: FontWeight.w700)),
                               const SizedBox(height: 6),
                               _HeatCell(value: d.fatigue),
                               const SizedBox(height: 4),
-                              Text('${d.sprints} sp.', style: const TextStyle(fontSize: 9, color: OdinColors.textMuted)),
+                              Text('${d.sprints} sp.', style: TextStyle(fontSize: 9, color: OdinColors.textMuted)),
                             ],
                           ),
                         ),
@@ -490,7 +490,7 @@ class _Kpi extends StatelessWidget {
           ),
           const Spacer(),
           Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: color)),
-          Text(label, style: const TextStyle(fontSize: 10, color: OdinColors.textMuted)),
+          Text(label, style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
         ],
       ),
     );
@@ -512,7 +512,7 @@ class _ToggleChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           gradient: selected
-              ? const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)])
+              ? LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)])
               : null,
           color: selected ? null : Colors.white.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(12),
@@ -572,7 +572,7 @@ class _Insight extends StatelessWidget {
         children: [
           Text(period, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(height: 4),
-          Text(text, style: const TextStyle(fontSize: 11, color: OdinColors.textMuted, height: 1.35)),
+          Text(text, style: TextStyle(fontSize: 11, color: OdinColors.textMuted, height: 1.35)),
         ],
       ),
     );
@@ -603,7 +603,7 @@ class _FatigueLineChart extends StatelessWidget {
               showTitles: true,
               reservedSize: 28,
               interval: 25,
-              getTitlesWidget: (v, _) => Text('${v.toInt()}', style: const TextStyle(fontSize: 9, color: OdinColors.textMuted)),
+              getTitlesWidget: (v, _) => Text('${v.toInt()}', style: TextStyle(fontSize: 9, color: OdinColors.textMuted)),
             ),
           ),
           bottomTitles: AxisTitles(
@@ -612,7 +612,7 @@ class _FatigueLineChart extends StatelessWidget {
               getTitlesWidget: (v, _) {
                 final i = v.toInt();
                 if (i < 0 || i >= points.length) return const SizedBox.shrink();
-                return Text(points[i].interval, style: const TextStyle(fontSize: 8, color: OdinColors.textMuted));
+                return Text(points[i].interval, style: TextStyle(fontSize: 8, color: OdinColors.textMuted));
               },
             ),
           ),
@@ -661,7 +661,7 @@ class _ActionsBarChart extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 28,
-              getTitlesWidget: (v, _) => Text('${v.toInt()}', style: const TextStyle(fontSize: 9, color: OdinColors.textMuted)),
+              getTitlesWidget: (v, _) => Text('${v.toInt()}', style: TextStyle(fontSize: 9, color: OdinColors.textMuted)),
             ),
           ),
           bottomTitles: AxisTitles(
@@ -670,7 +670,7 @@ class _ActionsBarChart extends StatelessWidget {
               getTitlesWidget: (v, _) {
                 final i = v.toInt();
                 if (i < 0 || i >= points.length) return const SizedBox.shrink();
-                return Text(points[i].interval, style: const TextStyle(fontSize: 8, color: OdinColors.textMuted));
+                return Text(points[i].interval, style: TextStyle(fontSize: 8, color: OdinColors.textMuted));
               },
             ),
           ),
@@ -715,7 +715,7 @@ class _PlayerAreaChart extends StatelessWidget {
               showTitles: true,
               reservedSize: 28,
               interval: 25,
-              getTitlesWidget: (v, _) => Text('${v.toInt()}', style: const TextStyle(fontSize: 9, color: OdinColors.textMuted)),
+              getTitlesWidget: (v, _) => Text('${v.toInt()}', style: TextStyle(fontSize: 9, color: OdinColors.textMuted)),
             ),
           ),
           bottomTitles: AxisTitles(
@@ -724,7 +724,7 @@ class _PlayerAreaChart extends StatelessWidget {
               getTitlesWidget: (v, _) {
                 final i = v.toInt();
                 if (i < 0 || i >= points.length) return const SizedBox.shrink();
-                return Text(points[i].interval, style: const TextStyle(fontSize: 8, color: OdinColors.textMuted));
+                return Text(points[i].interval, style: TextStyle(fontSize: 8, color: OdinColors.textMuted));
               },
             ),
           ),

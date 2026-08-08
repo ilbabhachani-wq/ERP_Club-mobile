@@ -106,14 +106,14 @@ class _ScoutSearchScreenState extends State<ScoutSearchScreen> {
                 Expanded(
                   child: TextField(
                     controller: _queryCtrl,
-                    style: const TextStyle(color: AppColors.text),
+                    style: TextStyle(color: AppColors.text),
                     decoration: InputDecoration(
                       hintText: 'Nom, club, position…',
                       hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.35)),
                       filled: true,
                       fillColor: AppColors.card,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                      prefixIcon: const Icon(Icons.search_rounded, color: AppColors.muted),
+                      prefixIcon: Icon(Icons.search_rounded, color: AppColors.muted),
                     ),
                     onSubmitted: (_) => _search(),
                   ),

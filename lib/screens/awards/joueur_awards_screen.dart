@@ -18,7 +18,7 @@ class JoueurAwardsScreen extends StatelessWidget {
         children: [
           const SectionTitle('Récompenses & Trophées'),
           if (awards.isEmpty)
-            const GlassCard(child: Text('Aucune récompense', style: TextStyle(color: OdinColors.textMuted)))
+            GlassCard(child: Text('Aucune récompense', style: TextStyle(color: OdinColors.textMuted)))
           else
             ...awards.asMap().entries.map((e) {
               final a = e.value;
@@ -34,7 +34,7 @@ class JoueurAwardsScreen extends StatelessWidget {
                           duration: const Duration(milliseconds: 600),
                           curve: Curves.elasticOut,
                           builder: (_, scale, child) => Transform.scale(scale: scale, child: child),
-                          child: Text(a.icon, style: const TextStyle(fontSize: 36)),
+                          child: Text(a.icon, style: TextStyle(fontSize: 36)),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -42,7 +42,7 @@ class JoueurAwardsScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(a.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                              Text(a.season, style: const TextStyle(color: OdinColors.textMuted, fontSize: 12)),
+                              Text(a.season, style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
                               if (a.awardType.isNotEmpty)
                                 Container(
                                   margin: const EdgeInsets.only(top: 6),

@@ -179,9 +179,9 @@ class _ScoutReportScreenState extends State<ScoutReportScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.auto_awesome, color: AppColors.accent, size: 20),
+                  Icon(Icons.auto_awesome, color: AppColors.accent, size: 20),
                   const SizedBox(width: 8),
-                  Text('Score IA: $_aiScore/100', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+                  Text('Score IA: $_aiScore/100', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
                 ],
               ),
             ),

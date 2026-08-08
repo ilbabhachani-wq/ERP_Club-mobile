@@ -1,11 +1,11 @@
 {
-    "name": "erp_club_player",
-    "short_name": "erp_club_player",
+    "name": "ODIN ERP",
+    "short_name": "ODIN ERP",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0B0B14",
+    "theme_color": "#FF7A00",
+    "description": "ODIN ERP — Application mobile club",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -3,8 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../core/theme/odin_colors.dart';
 import '../core/widgets/analyste_notifications.dart';
+import '../core/widgets/odin_settings_sheet.dart';
 import '../core/widgets/odin_widgets.dart';
 import '../providers/app_providers.dart';
+import '../providers/theme_provider.dart';
 import '../router/app_router.dart';
 
 class AnalysteShell extends StatelessWidget {
@@ -14,6 +16,8 @@ class AnalysteShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
+    context.watch<LocaleProvider>();
     final location = GoRouterState.of(context).uri.path;
     final index = analysteShellIndexForLocation(location);
     final auth = context.watch<AuthProvider>();
@@ -30,11 +34,7 @@ class AnalysteShell extends StatelessWidget {
         logoSize: 58,
         actions: [
           const AnalysteNotificationBell(),
-          IconButton(
-            tooltip: 'Déconnexion',
-            icon: const Icon(Icons.logout_rounded, color: OdinColors.textSecondary),
-            onPressed: () => auth.logout(),
-          ),
+          OdinSettingsButton(roleLabel: 'Espace Analyste'),
         ],
       ),
       body: KeyedSubtree(

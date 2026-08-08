@@ -39,6 +39,8 @@ import '../screens/analyste/analyste_opponent_screen.dart';
 import '../shell/player_shell.dart';
 import '../shell/analyste_shell.dart';
 import '../shell/scout_shell.dart';
+import '../shell/preparateur_shell.dart';
+import '../shell/responsable_shell.dart';
 import '../screens/scout/scout_dashboard_screen.dart';
 import '../screens/scout/scout_map_screen.dart';
 import '../screens/scout/scout_search_screen.dart';
@@ -54,8 +56,23 @@ import '../screens/scout/scout_ai_screen.dart';
 import '../screens/scout/scout_agents_screen.dart';
 import '../screens/scout/scout_shortlist_screen.dart';
 import '../screens/scout/scout_settings_screen.dart';
+import '../screens/preparateur/prep_dashboard_screen.dart';
+import '../screens/preparateur/prep_programmes_screen.dart';
+import '../screens/preparateur/prep_charge_screen.dart';
+import '../screens/preparateur/prep_condition_screen.dart';
+import '../screens/preparateur/prep_notifications_screen.dart';
+import '../screens/preparateur/prep_ai_screen.dart';
+import '../screens/preparateur/prep_menu_screen.dart';
+import '../screens/responsable/resp_dashboard_screen.dart';
+import '../screens/responsable/resp_validation_screen.dart';
+import '../screens/responsable/resp_notifications_screen.dart';
+import '../screens/responsable/resp_teams_screen.dart';
+import '../screens/responsable/resp_menu_screen.dart';
+import '../screens/profile/staff_profile_screen.dart';
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _playerShellKey = GlobalKey<NavigatorState>(debugLabel: 'playerShell');
+final GlobalKey<NavigatorState> _preparateurShellKey = GlobalKey<NavigatorState>(debugLabel: 'preparateurShell');
+final GlobalKey<NavigatorState> _responsableShellKey = GlobalKey<NavigatorState>(debugLabel: 'responsableShell');
 
 CustomTransitionPage<void> _fadeSlidePage({
   required LocalKey key,
@@ -93,8 +110,12 @@ GoRouter createRouter(AuthProvider auth, AuthSessionNotifier sessionNotifier) {
         return public.contains(loc) ? null : '/login';
       }
 
-      // Connecté → quitter les écrans publics
-      if (public.contains(loc)) {
+      // Stay on splash until it finishes restoring session + loading role data.
+      // Otherwise GoRouter bounces to homeRoute with empty providers (cold start bug).
+      if (loc == '/splash') return null;
+
+      // Connecté → quitter login / onboarding
+      if (loc == '/login' || loc == '/onboarding') {
         return user?.homeRoute ?? '/';
       }
 
@@ -102,12 +123,20 @@ GoRouter createRouter(AuthProvider auth, AuthSessionNotifier sessionNotifier) {
 
       final onAnalyste = loc == '/analyste' || loc.startsWith('/analyste/');
       final onScout = loc == '/scout' || loc.startsWith('/scout/');
+      final onPreparateur = loc == '/preparateur' || loc.startsWith('/preparateur/');
+      final onResponsable = loc == '/responsable' || loc.startsWith('/responsable/');
 
       if (user.isAnalyste && !onAnalyste) return '/analyste';
       if (!user.isAnalyste && onAnalyste) return user.homeRoute;
 
       if (user.isScout && !onScout) return '/scout';
       if (!user.isScout && onScout) return user.homeRoute;
+
+      if (user.isPreparateur && !onPreparateur) return '/preparateur';
+      if (!user.isPreparateur && onPreparateur) return user.homeRoute;
+
+      if (user.isResponsable && !onResponsable) return '/responsable';
+      if (!user.isResponsable && onResponsable) return user.homeRoute;
 
       return null;
     },
@@ -249,6 +278,116 @@ GoRouter createRouter(AuthProvider auth, AuthSessionNotifier sessionNotifier) {
 
       // ── Scout: same flat pattern as analyste
       ..._scoutFlatRoutes(),
+
+      // ── Préparateur Physique
+      ShellRoute(
+        navigatorKey: _preparateurShellKey,
+        builder: (context, state, child) => PreparateurShell(child: child),
+        routes: [
+          GoRoute(
+            path: '/preparateur',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const PrepDashboardScreen()),
+          ),
+          GoRoute(
+            path: '/preparateur/programmes',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const PrepProgrammesScreen()),
+          ),
+          GoRoute(
+            path: '/preparateur/charge',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const PrepChargeScreen()),
+          ),
+          GoRoute(
+            path: '/preparateur/condition',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const PrepConditionScreen()),
+          ),
+          GoRoute(
+            path: '/preparateur/ia',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const PrepAiScreen()),
+          ),
+          GoRoute(
+            path: '/preparateur/menu',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const PrepMenuScreen()),
+          ),
+          GoRoute(
+            path: '/preparateur/messages',
+            pageBuilder: (_, state) => _fadeSlidePage(
+              key: state.pageKey,
+              child: const MessagesScreen(backRoute: '/preparateur', showBack: false),
+            ),
+          ),
+          GoRoute(
+            path: '/preparateur/notifications',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const PrepNotificationsScreen()),
+          ),
+          GoRoute(
+            path: '/preparateur/profil',
+            pageBuilder: (_, state) => _fadeSlidePage(
+              key: state.pageKey,
+              child: const StaffProfileScreen(
+                roleLabel: 'Préparateur Physique',
+                accentColor: Color(0xFF6366F1),
+              ),
+            ),
+          ),
+        ],
+      ),
+
+      // ── Responsable Club
+      ShellRoute(
+        navigatorKey: _responsableShellKey,
+        builder: (context, state, child) => ResponsableShell(child: child),
+        routes: [
+          GoRoute(
+            path: '/responsable',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const RespDashboardScreen()),
+          ),
+          GoRoute(
+            path: '/responsable/validation',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const RespValidationScreen()),
+          ),
+          GoRoute(
+            path: '/responsable/notifications',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const RespNotificationsScreen()),
+          ),
+          GoRoute(
+            path: '/responsable/equipes',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const RespTeamsScreen()),
+          ),
+          GoRoute(
+            path: '/responsable/menu',
+            pageBuilder: (_, state) =>
+                _fadeSlidePage(key: state.pageKey, child: const RespMenuScreen()),
+          ),
+          GoRoute(
+            path: '/responsable/messages',
+            pageBuilder: (_, state) => _fadeSlidePage(
+              key: state.pageKey,
+              child: const MessagesScreen(backRoute: '/responsable', showBack: false),
+            ),
+          ),
+          GoRoute(
+            path: '/responsable/profil',
+            pageBuilder: (_, state) => _fadeSlidePage(
+              key: state.pageKey,
+              child: const StaffProfileScreen(
+                roleLabel: 'Responsable Club',
+                accentColor: Color(0xFF22C55E),
+              ),
+            ),
+          ),
+        ],
+      ),
     ],
   );
 }
@@ -545,6 +684,44 @@ void goToScoutShellTab(BuildContext context, int index) {
     '/scout/search',
     '/scout/watchlist',
     '/scout/modules',
+  ];
+  context.go(paths[index]);
+}
+
+int preparateurShellIndexForLocation(String location) {
+  if (location.startsWith('/preparateur/programmes')) return 1;
+  if (location.startsWith('/preparateur/charge')) return 2;
+  if (location.startsWith('/preparateur/condition')) return 3;
+  if (location.startsWith('/preparateur/ia')) return 4;
+  if (location.startsWith('/preparateur/messages')) return 5;
+  return 0;
+}
+
+void goToPreparateurShellTab(BuildContext context, int index) {
+  const paths = [
+    '/preparateur',
+    '/preparateur/programmes',
+    '/preparateur/charge',
+    '/preparateur/condition',
+    '/preparateur/ia',
+    '/preparateur/messages',
+  ];
+  context.go(paths[index]);
+}
+
+int responsableShellIndexForLocation(String location) {
+  if (location.startsWith('/responsable/validation')) return 1;
+  if (location.startsWith('/responsable/messages')) return 2;
+  if (location.startsWith('/responsable/equipes')) return 3;
+  return 0;
+}
+
+void goToResponsableShellTab(BuildContext context, int index) {
+  const paths = [
+    '/responsable',
+    '/responsable/validation',
+    '/responsable/messages',
+    '/responsable/equipes',
   ];
   context.go(paths[index]);
 }

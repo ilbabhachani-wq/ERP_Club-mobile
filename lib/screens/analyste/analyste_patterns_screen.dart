@@ -66,7 +66,7 @@ class _AnalystePatternsScreenState extends State<AnalystePatternsScreen> {
                       color: AnalystePatternsScreen.accent.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.auto_awesome, color: AnalystePatternsScreen.accent, size: 22),
+                    child: Icon(Icons.auto_awesome, color: AnalystePatternsScreen.accent, size: 22),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -144,7 +144,7 @@ class _AnalystePatternsScreenState extends State<AnalystePatternsScreen> {
             accentColor: AnalystePatternsScreen.accent,
             child: Text(
               summary,
-              style: const TextStyle(fontSize: 13, height: 1.45, color: OdinColors.textSecondary),
+              style: TextStyle(fontSize: 13, height: 1.45, color: OdinColors.textSecondary),
             ),
           ),
           index: 1,
@@ -343,7 +343,7 @@ class _MiniKpi extends StatelessWidget {
         children: [
           Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: color)),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(fontSize: 10, color: OdinColors.textMuted)),
+          Text(label, style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
         ],
       ),
     ).animate().fadeIn(duration: 400.ms);

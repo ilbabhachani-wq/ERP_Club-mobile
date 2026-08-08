@@ -121,7 +121,7 @@ class _JoueurAiScreenState extends State<JoueurAiScreen> {
             ),
           ),
           if (_loadingReport && report == null)
-            const Expanded(
+            Expanded(
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -153,7 +153,7 @@ class _JoueurAiScreenState extends State<JoueurAiScreen> {
                   ],
                   if (suggestions.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    const Text(
+                     Text(
                       'Questions suggérées',
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: OdinColors.textMuted),
                     ),
@@ -277,7 +277,7 @@ class _WeeklyReportCard extends StatelessWidget {
                   color: OdinColors.playerCoral.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.insights_rounded, size: 18, color: OdinColors.playerCoral),
+                child: Icon(Icons.insights_rounded, size: 18, color: OdinColors.playerCoral),
               ),
               const SizedBox(width: 10),
               const Text('Rapport Hebdo', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
@@ -300,14 +300,14 @@ class _WeeklyReportCard extends StatelessWidget {
                     ),
                     child: Text(
                       '${e.key + 1}',
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: OdinColors.playerCoral),
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: OdinColors.playerCoral),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       e.value,
-                      style: const TextStyle(fontSize: 13, height: 1.45, color: OdinColors.textSecondary),
+                      style: TextStyle(fontSize: 13, height: 1.45, color: OdinColors.textSecondary),
                     ),
                   ),
                 ],
@@ -348,7 +348,7 @@ class _InsightsRow extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Text(
                           '${s['label'] ?? ''}: ${s['value'] ?? ''}',
-                          style: const TextStyle(fontSize: 11, color: OdinColors.textMuted),
+                          style: TextStyle(fontSize: 11, color: OdinColors.textMuted),
                         ),
                       )),
                 ],
@@ -375,7 +375,7 @@ class _InsightsRow extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Text(
                           '${w['label'] ?? ''}: ${w['value'] ?? ''}',
-                          style: const TextStyle(fontSize: 11, color: OdinColors.textMuted),
+                          style: TextStyle(fontSize: 11, color: OdinColors.textMuted),
                         ),
                       )),
                 ],
@@ -409,7 +409,7 @@ class _SuggestionChip extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: const TextStyle(fontSize: 11, color: OdinColors.textSecondary, height: 1.3),
+            style: TextStyle(fontSize: 11, color: OdinColors.textSecondary, height: 1.3),
           ),
         ),
       ),
@@ -434,7 +434,7 @@ class _ChatPanel extends StatelessWidget {
         border: Border.all(color: OdinColors.panelBorder),
       ),
       child: messages.isEmpty && !sending
-          ? const Column(
+          ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: 24),
@@ -594,21 +594,21 @@ class _ChatInputBar extends StatelessWidget {
               enabled: !sending,
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => onSend(),
-              style: const TextStyle(color: OdinColors.textPrimary, fontSize: 14),
+              style: TextStyle(color: OdinColors.textPrimary, fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Posez votre question...',
-                hintStyle: const TextStyle(color: OdinColors.textMuted, fontSize: 14),
-                prefixIcon: const Icon(Icons.auto_awesome_outlined, size: 20, color: OdinColors.textMuted),
+                hintStyle: TextStyle(color: OdinColors.textMuted, fontSize: 14),
+                prefixIcon: Icon(Icons.auto_awesome_outlined, size: 20, color: OdinColors.textMuted),
                 filled: true,
                 fillColor: const Color(0xB81C1C2E),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: OdinColors.panelBorder),
+                  borderSide: BorderSide(color: OdinColors.panelBorder),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: OdinColors.panelBorder),
+                  borderSide: BorderSide(color: OdinColors.panelBorder),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -679,17 +679,17 @@ class _RefreshButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (loading)
-                const SizedBox(
+                SizedBox(
                   width: 14,
                   height: 14,
                   child: CircularProgressIndicator(strokeWidth: 2, color: OdinColors.textMuted),
                 )
               else
-                const Icon(Icons.refresh_rounded, size: 16, color: OdinColors.textSecondary),
+                Icon(Icons.refresh_rounded, size: 16, color: OdinColors.textSecondary),
               const SizedBox(width: 6),
               Text(
                 loading ? '…' : 'Actualiser',
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: OdinColors.textSecondary),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: OdinColors.textSecondary),
               ),
             ],
           ),

@@ -47,6 +47,13 @@ class AuthService {
     _api.setToken(null);
   }
 
+  Future<void> changePassword(String currentPassword, String newPassword) async {
+    await _api.patch('/auth/change-password', body: {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
+  }
+
   Future<void> _persist(String token, OdinUser user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, token);

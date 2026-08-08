@@ -114,10 +114,10 @@ class JoueurDashboardScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(e.value.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                                  Text(e.value.title, style: TextStyle(fontWeight: FontWeight.w700)),
                                   Text(
                                     e.value.location ?? e.value.eventDate,
-                                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                                    style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                                   ),
                                 ],
                               ),
@@ -169,13 +169,13 @@ class JoueurDashboardScreen extends StatelessWidget {
                               textAlign: TextAlign.center,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, height: 1.2),
+                              style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, height: 1.2),
                             ),
                             if (a.season.isNotEmpty) ...[
                               const SizedBox(height: 2),
                               Text(
                                 a.season,
-                                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: OdinColors.textMuted),
+                                style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: OdinColors.textMuted),
                               ),
                             ],
                           ],
@@ -248,8 +248,8 @@ class JoueurDashboardScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-            Text('$value / $target', style: const TextStyle(color: OdinColors.textMuted)),
+            Text(label, style: TextStyle(fontWeight: FontWeight.w600)),
+            Text('$value / $target', style: TextStyle(color: OdinColors.textMuted)),
           ],
         ),
         const SizedBox(height: 6),
@@ -372,7 +372,7 @@ class _HeroSection extends StatelessWidget {
                   Text(
                     'SAISON ${DateTime.now().year - 1}-${DateTime.now().year.toString().substring(2)} · ${player.position}',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
                       color: OdinColors.playerCoral,
@@ -389,12 +389,12 @@ class _HeroSection extends StatelessWidget {
                   Text(
                     '${nationalityFlag(player.nationality)} ${player.nationality ?? ''} · $club',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                    style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                   ),
                   Text(
                     league,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 11),
+                    style: TextStyle(color: OdinColors.textMuted, fontSize: 11),
                   ),
                 ],
               ),

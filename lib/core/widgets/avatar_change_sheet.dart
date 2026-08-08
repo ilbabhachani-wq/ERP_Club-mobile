@@ -37,7 +37,7 @@ Future<void> showAvatarChangeSheet(
             const SizedBox(height: 14),
             const Text('Photo de profil', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
             const SizedBox(height: 4),
-            const Text(
+             Text(
               'Upload via ImgBB',
               style: TextStyle(fontSize: 12, color: OdinColors.textMuted),
             ),
@@ -128,7 +128,7 @@ Future<bool> _askImgbbKey(BuildContext context) async {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+           Text(
             'Créez une clé gratuite sur api.imgbb.com puis collez-la ici.',
             style: TextStyle(fontSize: 13, color: OdinColors.textMuted),
           ),

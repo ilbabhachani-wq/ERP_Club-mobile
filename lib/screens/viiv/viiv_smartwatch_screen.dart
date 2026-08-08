@@ -53,7 +53,7 @@ class _ViivSmartwatchScreenState extends State<ViivSmartwatchScreen>
     final ble = viiv.ble;
 
     if (viiv.loading && !ble.isConnected) {
-      return const OdinBackdrop(
+      return OdinBackdrop(
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -84,7 +84,7 @@ class _ViivSmartwatchScreenState extends State<ViivSmartwatchScreen>
                 const SizedBox(height: 14),
                 Text(
                   ble.syncProgress.isNotEmpty ? ble.syncProgress : 'Sync montre…',
-                  style: const TextStyle(color: OdinColors.textMuted, fontSize: 13),
+                  style: TextStyle(color: OdinColors.textMuted, fontSize: 13),
                 ),
               ] else ...[
                 const Icon(Icons.watch_rounded, color: Color(0xFF22D3EE), size: 40),
@@ -197,6 +197,18 @@ class _ViivConnectGate extends StatelessWidget {
             if (ble.error != null) ...[
               const SizedBox(height: 16),
               Text(ble.error!, textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFFF87171), fontSize: 12)),
+              if (ble.permissionPermanentlyDenied) ...[
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: () => ble.openSettings(),
+                  icon: const Icon(Icons.settings_rounded, size: 18),
+                  label: const Text('Ouvrir les Réglages'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF22D3EE),
+                    side: BorderSide(color: const Color(0xFF22D3EE).withValues(alpha: 0.5)),
+                  ),
+                ),
+              ],
             ],
             const Spacer(),
             FilledButton.icon(
@@ -433,16 +445,16 @@ class _HomeTab extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Recovery', style: TextStyle(fontWeight: FontWeight.w800)),
-                        Text('${m.recovery}% · ${m.readiness}', style: const TextStyle(color: OdinColors.textMuted, fontSize: 12)),
+                        Text('${m.recovery}% · ${m.readiness}', style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
                       ],
                     ),
                   ),
                   Text(
                     m.strain.toStringAsFixed(1),
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFFFF7A00)),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFFFF7A00)),
                   ),
                   const SizedBox(width: 6),
-                  const Text('strain', style: TextStyle(color: OdinColors.textMuted, fontSize: 11)),
+                   Text('strain', style: TextStyle(color: OdinColors.textMuted, fontSize: 11)),
                 ],
               ),
             ),
@@ -813,7 +825,7 @@ class _HeartTab extends StatelessWidget {
                       );
                     }
                   },
-                  icon: const Icon(Icons.bloodtype_outlined, size: 18),
+                  icon: Icon(Icons.bloodtype_outlined, size: 18),
                   label: const Text('Mesurer SpO₂ maintenant'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF22D3EE),
@@ -830,7 +842,7 @@ class _HeartTab extends StatelessWidget {
             child: SizedBox(
               height: 180,
               child: m.hourlyHr.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         'Aucune courbe — Sync avec la montre au poignet',
                         style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
@@ -854,7 +866,7 @@ class _HeartTab extends StatelessWidget {
                             sideTitles: SideTitles(
                               showTitles: true,
                               reservedSize: 28,
-                              getTitlesWidget: (v, _) => Text('${v.toInt()}', style: const TextStyle(fontSize: 9, color: OdinColors.textMuted)),
+                              getTitlesWidget: (v, _) => Text('${v.toInt()}', style: TextStyle(fontSize: 9, color: OdinColors.textMuted)),
                             ),
                           ),
                           bottomTitles: AxisTitles(
@@ -864,7 +876,7 @@ class _HeartTab extends StatelessWidget {
                               getTitlesWidget: (v, _) {
                                 final i = v.toInt();
                                 if (i < 0 || i >= m.hourlyHr.length) return const SizedBox();
-                                return Text(m.hourlyHr[i].hour, style: const TextStyle(fontSize: 8, color: OdinColors.textMuted));
+                                return Text(m.hourlyHr[i].hour, style: TextStyle(fontSize: 8, color: OdinColors.textMuted));
                               },
                             ),
                           ),
@@ -903,8 +915,8 @@ class _HeartTab extends StatelessWidget {
                         decoration: BoxDecoration(color: _hex(z.color), shape: BoxShape.circle),
                       ),
                       const SizedBox(width: 10),
-                      Expanded(child: Text(z.zone, style: const TextStyle(fontWeight: FontWeight.w600))),
-                      Text('${z.minutes} min', style: const TextStyle(color: OdinColors.textMuted)),
+                      Expanded(child: Text(z.zone, style: TextStyle(fontWeight: FontWeight.w600))),
+                      Text('${z.minutes} min', style: TextStyle(color: OdinColors.textMuted)),
                     ],
                   ),
                 ),
@@ -966,8 +978,8 @@ class _DeviceTab extends StatelessWidget {
                         size: 18,
                       ),
                       const SizedBox(width: 10),
-                      Expanded(child: Text(e.type, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
-                      Text(e.time, style: const TextStyle(color: OdinColors.textMuted, fontSize: 11)),
+                      Expanded(child: Text(e.type, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
+                      Text(e.time, style: TextStyle(color: OdinColors.textMuted, fontSize: 11)),
                     ],
                   ),
                 ),

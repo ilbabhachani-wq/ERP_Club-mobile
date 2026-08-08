@@ -18,7 +18,7 @@ class JoueurTransfersScreen extends StatelessWidget {
         children: [
           const SectionTitle('Transferts & Rumeurs'),
           if (transfers.isEmpty)
-            const GlassCard(child: Text('Aucun transfert', style: TextStyle(color: OdinColors.textMuted)))
+            GlassCard(child: Text('Aucun transfert', style: TextStyle(color: OdinColors.textMuted)))
           else
             ...transfers.asMap().entries.map((e) {
               final t = e.value;
@@ -33,13 +33,13 @@ class JoueurTransfersScreen extends StatelessWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: Text(t.playerName, style: const TextStyle(fontWeight: FontWeight.w800)),
+                              child: Text(t.playerName, style: TextStyle(fontWeight: FontWeight.w800)),
                             ),
                             _statusChip(t.status),
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text('${t.transferType} → ${t.club}', style: const TextStyle(color: OdinColors.textMuted, fontSize: 12)),
+                        Text('${t.transferType} → ${t.club}', style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
                         const SizedBox(height: 8),
                         Row(
                           children: [

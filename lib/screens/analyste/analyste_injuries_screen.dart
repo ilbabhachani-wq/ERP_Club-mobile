@@ -67,7 +67,7 @@ class _AnalysteInjuriesScreenState extends State<AnalysteInjuriesScreen> {
                       color: AnalysteInjuriesScreen.accent.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.healing_rounded, color: AnalysteInjuriesScreen.accent, size: 22),
+                    child: Icon(Icons.healing_rounded, color: AnalysteInjuriesScreen.accent, size: 22),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -176,9 +176,9 @@ class _AnalysteInjuriesScreenState extends State<AnalysteInjuriesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p.name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
+                  Text(p.name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
                   const SizedBox(height: 4),
-                  const Text(
+                   Text(
                     'FACTEURS CONTRIBUTIFS',
                     style: TextStyle(fontSize: 10, letterSpacing: 0.8, fontWeight: FontWeight.w700, color: OdinColors.textMuted),
                   ),
@@ -190,7 +190,7 @@ class _AnalysteInjuriesScreenState extends State<AnalysteInjuriesScreen> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: Text(f.label, style: const TextStyle(fontSize: 12, color: OdinColors.textSecondary)),
+                                  child: Text(f.label, style: TextStyle(fontSize: 12, color: OdinColors.textSecondary)),
                                 ),
                                 Text('${f.value}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: f.color)),
                               ],
@@ -302,7 +302,7 @@ class _MiniKpi extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: color)),
-          Text(label, style: const TextStyle(fontSize: 10, color: OdinColors.textMuted)),
+          Text(label, style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
         ],
       ),
     );
@@ -338,7 +338,7 @@ class _ProbRing extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: OdinColors.textMuted)),
+        Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: OdinColors.textMuted)),
       ],
     );
   }

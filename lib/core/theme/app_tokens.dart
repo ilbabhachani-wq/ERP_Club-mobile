@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'odin_colors.dart';
 
-/// Design tokens SaaS — palette web ODIN (`src/index.css`).
+/// Design tokens SaaS — délégués à [OdinColors] (light/dark).
 abstract final class AppColors {
-  static const bg = OdinColors.canvas; // #0B0B14
-  static const bg2 = OdinColors.canvas2; // #12121C
-  static const card = OdinColors.panelSolid; // #16162A
-  static const accent = OdinColors.accent; // #FF7A00
+  static Color get bg => OdinColors.canvas;
+  static Color get bg2 => OdinColors.canvas2;
+  static Color get card => OdinColors.panelSolid;
+  static const accent = OdinColors.accent;
   static const accentStrong = OdinColors.accentStrong;
   static const coral = OdinColors.playerCoral;
   static const success = Color(0xFF22C55E);
   static const warning = OdinColors.warning;
   static const danger = OdinColors.danger;
   static const info = OdinColors.info;
-  static const text = OdinColors.textPrimary;
-  static const textSecondary = OdinColors.textSecondary;
-  static const muted = OdinColors.textMuted;
-  static const border = OdinColors.panelBorder;
+  static Color get text => OdinColors.textPrimary;
+  static Color get textSecondary => OdinColors.textSecondary;
+  static Color get muted => OdinColors.textMuted;
+  static Color get border => OdinColors.panelBorder;
 }
 
 abstract final class AppSpacing {
@@ -45,13 +45,13 @@ abstract final class AppRadius {
 abstract final class AppShadows {
   static List<BoxShadow> soft([Color? tint]) => [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.35),
-          blurRadius: 20,
+          color: OdinColors.shadow,
+          blurRadius: OdinColors.isDark ? 20 : 16,
           offset: const Offset(0, 8),
         ),
         if (tint != null)
           BoxShadow(
-            color: tint.withValues(alpha: 0.12),
+            color: tint.withValues(alpha: OdinColors.isDark ? 0.12 : 0.08),
             blurRadius: 18,
             offset: const Offset(0, 4),
           ),

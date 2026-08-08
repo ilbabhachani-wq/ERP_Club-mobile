@@ -110,7 +110,7 @@ class _ScoutAgentsScreenState extends State<ScoutAgentsScreen> {
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: Center(
-                                  child: Text(a.flag.isNotEmpty ? a.flag : '🤝', style: const TextStyle(fontSize: 22)),
+                                  child: Text(a.flag.isNotEmpty ? a.flag : '🤝', style: TextStyle(fontSize: 22)),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -132,7 +132,7 @@ class _ScoutAgentsScreenState extends State<ScoutAgentsScreen> {
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 16),
+                                      Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 16),
                                       Text(
                                         a.rating.toStringAsFixed(1),
                                         style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),

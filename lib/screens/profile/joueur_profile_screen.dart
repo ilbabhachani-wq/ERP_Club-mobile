@@ -125,7 +125,7 @@ class _JoueurProfileScreenState extends State<JoueurProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text('${contract.consumedPct}% du contrat écoulé', style: const TextStyle(fontSize: 12, color: OdinColors.textMuted)),
+                  Text('${contract.consumedPct}% du contrat écoulé', style: TextStyle(fontSize: 12, color: OdinColors.textMuted)),
                 ],
               ],
             ),
@@ -148,14 +148,14 @@ class _JoueurProfileScreenState extends State<JoueurProfileScreen> {
                     padding: const EdgeInsets.all(12),
                     child: Row(
                       children: [
-                        Text(a.icon, style: const TextStyle(fontSize: 24)),
+                        Text(a.icon, style: TextStyle(fontSize: 24)),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(a.title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                              Text(a.season, style: const TextStyle(color: OdinColors.textMuted, fontSize: 12)),
+                              Text(a.season, style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
                             ],
                           ),
                         ),
@@ -175,7 +175,7 @@ class _JoueurProfileScreenState extends State<JoueurProfileScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: OdinColors.textMuted)),
+          Text(label, style: TextStyle(color: OdinColors.textMuted)),
           Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
         ],
       ),

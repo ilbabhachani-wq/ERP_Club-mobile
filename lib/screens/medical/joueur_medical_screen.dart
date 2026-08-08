@@ -80,7 +80,7 @@ class _JoueurMedicalScreenState extends State<JoueurMedicalScreen> {
                   height: 200,
                   child: CustomPaint(
                     painter: _BodyPainter(injuries: data.injuries.map((i) => i.bodyPart).toList()),
-                    child: const Center(
+                    child: Center(
                       child: Icon(Icons.accessibility_new, size: 120, color: OdinColors.textMuted),
                     ),
                   ),
@@ -91,23 +91,23 @@ class _JoueurMedicalScreenState extends State<JoueurMedicalScreen> {
           const SizedBox(height: 16),
           const SectionTitle('Historique Blessures'),
           if (data.injuries.isEmpty)
-            const GlassCard(child: Text('Aucune blessure enregistrée', style: TextStyle(color: OdinColors.textMuted)))
+            GlassCard(child: Text('Aucune blessure enregistrée', style: TextStyle(color: OdinColors.textMuted)))
           else
             ...data.injuries.map((inj) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: GlassCard(
                     child: Row(
                       children: [
-                        const Icon(Icons.healing, color: OdinColors.danger),
+                        Icon(Icons.healing, color: OdinColors.danger),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(inj.injury, style: const TextStyle(fontWeight: FontWeight.w700)),
+                              Text(inj.injury, style: TextStyle(fontWeight: FontWeight.w700)),
                               Text(
                                 '${inj.bodyPart} · Retour: ${inj.returnDate}',
-                                style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                                style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                               ),
                             ],
                           ),

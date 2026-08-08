@@ -47,7 +47,7 @@ class MenuScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           OdinAnimations.fadeUp(
-            const Text('Toutes vos fonctionnalités joueur', style: TextStyle(color: OdinColors.textMuted)),
+             Text('Toutes vos fonctionnalités joueur', style: TextStyle(color: OdinColors.textMuted)),
             index: 1,
           ),
           const SizedBox(height: 20),
