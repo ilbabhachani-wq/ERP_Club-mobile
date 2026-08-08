@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/odin_colors.dart';
 import '../utils/scout_player_photos.dart';
 
 /// Shared scout UI chrome — badges, section labels, prospect tiles.
@@ -18,7 +19,7 @@ class ScoutSectionLabel extends StatelessWidget {
             fontSize: 11,
             fontWeight: FontWeight.w800,
             letterSpacing: 1.2,
-            color: Colors.white.withValues(alpha: 0.45),
+            color: OdinColors.textMuted.withValues(alpha: OdinColors.isDark ? 0.9 : 1),
           ),
         ),
         const Spacer(),

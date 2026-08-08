@@ -60,8 +60,8 @@ class _JoueurListScreenState extends State<JoueurListScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(p.name, style: const TextStyle(fontWeight: FontWeight.w800)),
-                            Text('${p.position} · ${p.availability}', style: const TextStyle(color: OdinColors.textMuted, fontSize: 12)),
+                            Text(p.name, style: TextStyle(fontWeight: FontWeight.w800)),
+                            Text('${p.position} · ${p.availability}', style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
                           ],
                         ),
                       ),

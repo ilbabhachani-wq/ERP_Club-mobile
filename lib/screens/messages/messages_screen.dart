@@ -8,7 +8,17 @@ import '../../providers/app_providers.dart';
 import '../../services/joueur_api.dart';
 
 class MessagesScreen extends StatefulWidget {
-  const MessagesScreen({super.key});
+  const MessagesScreen({
+    super.key,
+    this.backRoute = '/menu',
+    this.showBack = true,
+  });
+
+  /// Route to navigate to when leaving the contacts list (role-specific hub).
+  final String backRoute;
+
+  /// When false (bottom-nav tab), hide the back chevron on the contacts list.
+  final bool showBack;
 
   @override
   State<MessagesScreen> createState() => _MessagesScreenState();
@@ -88,12 +98,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
       children: [
         Row(
           children: [
-            IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/menu')),
+            if (widget.showBack)
+              IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go(widget.backRoute)),
             const Text('Messages', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
           ],
         ),
         if (_contacts.isEmpty)
-          const GlassCard(child: Text('Aucune conversation', style: TextStyle(color: OdinColors.textMuted)))
+          GlassCard(child: Text('Aucune conversation', style: TextStyle(color: OdinColors.textMuted)))
         else
           ..._contacts.asMap().entries.map((e) {
             final c = e.value as Map<String, dynamic>;
@@ -116,12 +127,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                            Text(name, style: TextStyle(fontWeight: FontWeight.w700)),
                             Text(
                               c['lastMessage'] as String? ?? '',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                              style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                             ),
                           ],
                         ),

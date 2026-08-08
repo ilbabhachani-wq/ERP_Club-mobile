@@ -104,7 +104,7 @@ class _AnalystePredictionScreenState extends State<AnalystePredictionScreen> {
                     color: AnalystePredictionScreen.accent.withValues(alpha: 0.16),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(Icons.psychology_rounded, color: AnalystePredictionScreen.accent, size: 22),
+                  child: Icon(Icons.psychology_rounded, color: AnalystePredictionScreen.accent, size: 22),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -529,7 +529,7 @@ class _OutcomeBar extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 11, color: OdinColors.textMuted),
+            style: TextStyle(fontSize: 11, color: OdinColors.textMuted),
           ),
         ),
       ],
@@ -554,7 +554,7 @@ class _XgTile extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: OdinColors.textMuted)),
+          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
           const SizedBox(height: 4),
           Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color)),
         ],
@@ -604,7 +604,7 @@ class _ScoreRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10),
-        Text('$prob%', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: OdinColors.textMuted)),
+        Text('$prob%', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: OdinColors.textMuted)),
       ],
     );
   }
@@ -622,7 +622,7 @@ class _MiniStat extends StatelessWidget {
     return Column(
       children: [
         Text('$n%', style: TextStyle(fontWeight: FontWeight.w900, color: color, fontSize: 16)),
-        Text(label, style: const TextStyle(fontSize: 10, color: OdinColors.textMuted)),
+        Text(label, style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
       ],
     );
   }

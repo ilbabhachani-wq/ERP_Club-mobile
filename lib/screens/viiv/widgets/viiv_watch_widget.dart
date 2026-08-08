@@ -46,11 +46,11 @@ class ViivHeroProfile extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [Color(0xFF22D3EE), Color(0xFF0891B2)],
                   ),
                 ),
-                child: const Icon(Icons.watch_rounded, color: Colors.black, size: 22),
+                child: Icon(Icons.watch_rounded, color: Colors.black, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -67,7 +67,7 @@ class ViivHeroProfile extends StatelessWidget {
                     ),
                     Text(
                       'Wearable Performance · $firstName · $position',
-                      style: const TextStyle(color: OdinColors.textMuted, fontSize: 12, height: 1.3),
+                      style: TextStyle(color: OdinColors.textMuted, fontSize: 12, height: 1.3),
                     ),
                   ],
                 ),
@@ -307,7 +307,7 @@ class _MiniStat extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(label.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w700, color: OdinColors.textMuted, letterSpacing: 0.8)),
+          Text(label.toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700, color: OdinColors.textMuted, letterSpacing: 0.8)),
           const SizedBox(height: 4),
           Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: color)),
         ],
@@ -343,7 +343,7 @@ class _InfoChip extends StatelessWidget {
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: OdinColors.textSecondary),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: OdinColors.textSecondary),
               ),
             ),
           ],
@@ -473,7 +473,7 @@ class _ViivGx17WatchShowcaseState extends State<ViivGx17WatchShowcase> with Tick
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                   ),
-                  child: const Text(
+                  child:  Text(
                     'Viiv GX17 · Glisser · 360°',
                     style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: OdinColors.textMuted, letterSpacing: 0.5),
                   ),
@@ -744,12 +744,12 @@ class ViivGlassMetric extends StatelessWidget {
         children: [
           Text(
             label.toUpperCase(),
-            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1.1, color: OdinColors.textMuted),
+            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1.1, color: OdinColors.textMuted),
           ),
           const SizedBox(height: 4),
           Text(
             '$value$suffix',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: OdinColors.textPrimary),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: OdinColors.textPrimary),
           ),
           if (delta != null)
             Text(delta!, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color)),

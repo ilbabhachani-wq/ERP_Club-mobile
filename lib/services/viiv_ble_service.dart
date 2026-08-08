@@ -130,18 +130,35 @@ class ViivBleService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// True si la dernière tentative a échoué parce que la permission est
+  /// bloquée définitivement (l'utilisateur doit l'activer dans Réglages).
+  bool permissionPermanentlyDenied = false;
+
   Future<bool> _ensurePermissions() async {
     if (kIsWeb) return false;
+    permissionPermanentlyDenied = false;
     if (defaultTargetPlatform == TargetPlatform.android) {
       final statuses = await [
         Permission.bluetoothScan,
         Permission.bluetoothConnect,
         Permission.locationWhenInUse,
       ].request();
-      return statuses.values.every((s) => s.isGranted || s.isLimited);
+      final ok = statuses.values.every((s) => s.isGranted || s.isLimited);
+      if (!ok && statuses.values.any((s) => s.isPermanentlyDenied)) {
+        permissionPermanentlyDenied = true;
+      }
+      return ok;
     }
     if (defaultTargetPlatform == TargetPlatform.iOS) {
-      final status = await Permission.bluetooth.request();
+      var status = await Permission.bluetooth.status;
+      if (status.isPermanentlyDenied) {
+        permissionPermanentlyDenied = true;
+        return false;
+      }
+      status = await Permission.bluetooth.request();
+      if (status.isPermanentlyDenied) {
+        permissionPermanentlyDenied = true;
+      }
       return status.isGranted || status.isLimited;
     }
     return false;
@@ -160,7 +177,9 @@ class ViivBleService extends ChangeNotifier {
 
     final ok = await _ensurePermissions();
     if (!ok) {
-      error = 'Autorisez Bluetooth (et Localisation) pour scanner la Viiv GX17.';
+      error = permissionPermanentlyDenied
+          ? 'Bluetooth refusé pour ODIN ERP. Ouvrez Réglages > ODIN ERP et autorisez le Bluetooth (et la Localisation sur Android).'
+          : 'Autorisez Bluetooth (et Localisation) pour scanner la Viiv GX17.';
       state = ViivBleConnectionState.error;
       notifyListeners();
       return;
@@ -254,6 +273,10 @@ class ViivBleService extends ChangeNotifier {
       }
     }
     notifyListeners();
+  }
+
+  Future<void> openSettings() async {
+    await openAppSettings();
   }
 
   Future<void> stopScan() async {

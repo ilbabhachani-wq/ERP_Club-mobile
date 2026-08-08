@@ -160,7 +160,7 @@ class _AnalysteOpponentScreenState extends State<AnalysteOpponentScreen> {
               const SizedBox(height: 10),
               Text(
                 '${intel.name} attaque ${intel.leftPct}% gauche, ${intel.centerPct}% centre, ${intel.rightPct}% droite.',
-                style: const TextStyle(fontSize: 13, height: 1.4, color: OdinColors.textSecondary),
+                style: TextStyle(fontSize: 13, height: 1.4, color: OdinColors.textSecondary),
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -305,8 +305,8 @@ class _AnalysteOpponentScreenState extends State<AnalysteOpponentScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(p.name, style: const TextStyle(fontWeight: FontWeight.w800)),
-                        Text(p.role, style: const TextStyle(fontSize: 11, color: OdinColors.textMuted)),
+                        Text(p.name, style: TextStyle(fontWeight: FontWeight.w800)),
+                        Text(p.role, style: TextStyle(fontSize: 11, color: OdinColors.textMuted)),
                       ],
                     ),
                   ),
@@ -317,7 +317,7 @@ class _AnalysteOpponentScreenState extends State<AnalysteOpponentScreen> {
                         '${p.threat}',
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: _threatColor(p.threat)),
                       ),
-                      const Text('Menace', style: TextStyle(fontSize: 9, color: OdinColors.textMuted)),
+                       Text('Menace', style: TextStyle(fontSize: 9, color: OdinColors.textMuted)),
                     ],
                   ),
                 ],

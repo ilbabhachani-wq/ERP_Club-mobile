@@ -19,7 +19,7 @@ class JoueurDocumentsScreen extends StatelessWidget {
         children: [
           const SectionTitle('Mes Documents'),
           if (data.documents.isEmpty)
-            const GlassCard(child: Text('Aucun document', style: TextStyle(color: OdinColors.textMuted)))
+            GlassCard(child: Text('Aucun document', style: TextStyle(color: OdinColors.textMuted)))
           else
             ...data.documents.asMap().entries.map((e) {
               final d = e.value;
@@ -30,14 +30,14 @@ class JoueurDocumentsScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(12),
                     child: Row(
                       children: [
-                        const Icon(Icons.description_outlined, color: OdinColors.accent),
+                        Icon(Icons.description_outlined, color: OdinColors.accent),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(d.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                              Text('${d.docType} · ${d.docDate} · ${d.size}', style: const TextStyle(color: OdinColors.textMuted, fontSize: 11)),
+                              Text(d.name, style: TextStyle(fontWeight: FontWeight.w700)),
+                              Text('${d.docType} · ${d.docDate} · ${d.size}', style: TextStyle(color: OdinColors.textMuted, fontSize: 11)),
                             ],
                           ),
                         ),

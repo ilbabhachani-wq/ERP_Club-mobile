@@ -140,7 +140,7 @@ class _AnalysteModuleScreenState extends State<AnalysteModuleScreen> {
                         p['title']?.toString() ??
                         p['name']?.toString() ??
                         'Pattern',
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                   if ((p['confidence'] ?? p['score']) != null)
                     Padding(
@@ -153,7 +153,7 @@ class _AnalysteModuleScreenState extends State<AnalysteModuleScreen> {
                   if ((p['description'] ?? p['desc']) != null)
                     Text(
                       '${p['description'] ?? p['desc']}',
-                      style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                      style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                     ),
                 ],
               ),
@@ -178,7 +178,7 @@ class _AnalysteModuleScreenState extends State<AnalysteModuleScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(e.key, style: const TextStyle(color: OdinColors.textMuted, fontSize: 12)),
+                        child: Text(e.key, style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
                       ),
                       const SizedBox(width: 8),
                       Flexible(
@@ -242,11 +242,11 @@ class _AnalysteModuleScreenState extends State<AnalysteModuleScreen> {
                 children: [
                   Text(
                     p['player']?.toString() ?? p['name']?.toString() ?? 'Joueur',
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                   Text(
                     p['risk']?.toString() ?? p['injury']?.toString() ?? p['type']?.toString() ?? '',
-                    style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                    style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                   ),
                 ],
               ),
@@ -294,7 +294,7 @@ class _AnalysteModuleScreenState extends State<AnalysteModuleScreen> {
 
     if (cards.isEmpty) {
       cards.add(
-        const GlassCard(
+        GlassCard(
           child: Center(
             child: Padding(
               padding: EdgeInsets.all(24),
@@ -312,7 +312,7 @@ class _AnalysteModuleScreenState extends State<AnalysteModuleScreen> {
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  Expanded(child: Text('${e.key}', style: const TextStyle(color: OdinColors.textMuted))),
+                  Expanded(child: Text('${e.key}', style: TextStyle(color: OdinColors.textMuted))),
                   Text('${e.value}', style: const TextStyle(fontWeight: FontWeight.w700)),
                 ],
               ),

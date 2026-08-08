@@ -36,19 +36,19 @@ class JoueurPlanningScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SectionTitle('Prochain Match'),
-                  Text(nextMatch.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+                  Text(nextMatch.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
                   const SizedBox(height: 4),
                   Text(
                     '${nextMatch.eventDate} ${nextMatch.eventTime ?? ''}',
-                    style: const TextStyle(color: OdinColors.textMuted),
+                    style: TextStyle(color: OdinColors.textMuted),
                   ),
                   if (nextMatch.location != null) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined, size: 14, color: OdinColors.textMuted),
+                        Icon(Icons.location_on_outlined, size: 14, color: OdinColors.textMuted),
                         const SizedBox(width: 4),
-                        Text(nextMatch.location!, style: const TextStyle(color: OdinColors.textMuted, fontSize: 12)),
+                        Text(nextMatch.location!, style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
                       ],
                     ),
                   ],
@@ -117,10 +117,10 @@ class JoueurPlanningScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(ev.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                                Text(ev.title, style: TextStyle(fontWeight: FontWeight.w700)),
                                 Text(
                                   '${ev.eventDate} ${ev.eventTime ?? ''}',
-                                  style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                                  style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                                 ),
                               ],
                             ),
@@ -233,7 +233,7 @@ class _AnimatedLoadCard extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(height: 10),
-          Text(label, style: const TextStyle(color: OdinColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(color: OdinColors.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           CountUpInt(
             value: (p * 100).round(),
@@ -315,13 +315,13 @@ class _SwipeableMonthCalendarState extends State<_SwipeableMonthCalendar> {
                       duration: const Duration(milliseconds: 320),
                       curve: Curves.easeOutCubic,
                     ),
-                    icon: const Icon(Icons.chevron_left, color: OdinColors.textMuted),
+                    icon: Icon(Icons.chevron_left, color: OdinColors.textMuted),
                   ),
                   Expanded(
                     child: Text(
                       _monthLabel(month),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontWeight: FontWeight.w800),
+                      style: TextStyle(fontWeight: FontWeight.w800),
                     ),
                   ),
                   IconButton(
@@ -329,7 +329,7 @@ class _SwipeableMonthCalendarState extends State<_SwipeableMonthCalendar> {
                       duration: const Duration(milliseconds: 320),
                       curve: Curves.easeOutCubic,
                     ),
-                    icon: const Icon(Icons.chevron_right, color: OdinColors.textMuted),
+                    icon: Icon(Icons.chevron_right, color: OdinColors.textMuted),
                   ),
                 ],
               );

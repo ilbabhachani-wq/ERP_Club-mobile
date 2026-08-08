@@ -127,8 +127,8 @@ class _ScoutProspectScreenState extends State<ScoutProspectScreen> {
                   ),
                   Column(
                     children: [
-                      Text('${p.potential}', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.accent)),
-                      const Text('POTENTIEL', style: TextStyle(fontSize: 9, color: AppColors.muted, fontWeight: FontWeight.w800)),
+                      Text('${p.potential}', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.accent)),
+                       Text('POTENTIEL', style: TextStyle(fontSize: 9, color: AppColors.muted, fontWeight: FontWeight.w800)),
                     ],
                   ),
                 ],

@@ -2,8 +2,11 @@ import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../animations/odin_animations.dart';
 import '../theme/odin_colors.dart';
+import '../../providers/theme_provider.dart';
+import '../../providers/app_providers.dart';
 /// Fond login web — aurora + grille + étoiles + orbes + particules animées.
 class LoginBackdrop extends StatefulWidget {
   const LoginBackdrop({super.key, required this.child});
@@ -40,7 +43,7 @@ class _LoginBackdropState extends State<LoginBackdrop> with TickerProviderStateM
     return Stack(
       fit: StackFit.expand,
       children: [
-        const ColoredBox(color: OdinColors.canvas),
+        ColoredBox(color: OdinColors.canvas),
         // Breathing radial glows
         AnimatedBuilder(
           animation: Listenable.merge([_pulse, _drift]),
@@ -617,10 +620,10 @@ class _OdinGlassTextFieldState extends State<OdinGlassTextField> {
             onFieldSubmitted: widget.onFieldSubmitted,
             validator: widget.validator,
             autofillHints: widget.autofillHints,
-            style: const TextStyle(color: OdinColors.textPrimary, fontSize: 14),
+            style: TextStyle(color: OdinColors.textPrimary, fontSize: 14),
             decoration: InputDecoration(
               hintText: widget.hint,
-              hintStyle: const TextStyle(color: OdinColors.textMuted, fontSize: 14),
+              hintStyle: TextStyle(color: OdinColors.textMuted, fontSize: 14),
               prefixIcon: widget.prefixIcon != null
                   ? Icon(
                       widget.prefixIcon,
@@ -640,7 +643,7 @@ class _OdinGlassTextFieldState extends State<OdinGlassTextField> {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: OdinColors.panelBorder),
+                borderSide: BorderSide(color: OdinColors.panelBorder),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -667,20 +670,25 @@ class OdinBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Rebuild every screen that uses this backdrop when theme/locale flips.
+    context.watch<ThemeProvider>();
+    context.watch<LocaleProvider>();
+    final c1 = OdinColors.canvas;
+    final c2 = OdinColors.canvas2;
     return Stack(
       fit: StackFit.expand,
       children: [
-        const DecoratedBox(
+        DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF0B0B14), Color(0xFF10101C), Color(0xFF0B0B14)],
+              colors: [c1, c2, c1],
             ),
           ),
         ),
         const _AuroraLayer(),
-        if (showGrid) CustomPaint(painter: _GridPainter()),
+        if (showGrid) CustomPaint(painter: _GridPainter(OdinColors.gridLine)),
         child,
       ],
     );
@@ -722,7 +730,10 @@ class _AuroraLayerState extends State<_AuroraLayer> with SingleTickerProviderSta
                 gradient: RadialGradient(
                   center: Alignment(-0.7 + _ctrl.value * 0.2, -0.75),
                   radius: 1.1,
-                  colors: [OdinColors.playerCoral.withValues(alpha: 0.14), Colors.transparent],
+                  colors: [
+                OdinColors.playerCoral.withValues(alpha: OdinColors.isDark ? 0.14 : 0.08),
+                Colors.transparent,
+              ],
                 ),
               ),
             ),
@@ -731,7 +742,10 @@ class _AuroraLayerState extends State<_AuroraLayer> with SingleTickerProviderSta
                 gradient: RadialGradient(
                   center: Alignment(0.85 - _ctrl.value * 0.15, 0.15),
                   radius: 0.85,
-                  colors: [OdinColors.accent.withValues(alpha: 0.1), Colors.transparent],
+                  colors: [
+                    OdinColors.accent.withValues(alpha: OdinColors.isDark ? 0.1 : 0.06),
+                    Colors.transparent,
+                  ],
                 ),
               ),
             ),
@@ -740,7 +754,10 @@ class _AuroraLayerState extends State<_AuroraLayer> with SingleTickerProviderSta
                 gradient: RadialGradient(
                   center: Alignment(0, 0.9),
                   radius: 0.7,
-                  colors: [const Color(0xFF22D3EE).withValues(alpha: 0.06), Colors.transparent],
+                  colors: [
+                    const Color(0xFF22D3EE).withValues(alpha: OdinColors.isDark ? 0.06 : 0.04),
+                    Colors.transparent,
+                  ],
                 ),
               ),
             ),
@@ -752,10 +769,13 @@ class _AuroraLayerState extends State<_AuroraLayer> with SingleTickerProviderSta
 }
 
 class _GridPainter extends CustomPainter {
+  _GridPainter(this.color);
+  final Color color;
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.025)
+      ..color = color
       ..strokeWidth = 0.5;
     const step = 28.0;
     for (var x = 0.0; x < size.width; x += step) {
@@ -767,7 +787,7 @@ class _GridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _GridPainter oldDelegate) => oldDelegate.color != color;
 }
 
 /// Scaffold page pro — backdrop + transition + padding safe.
@@ -816,6 +836,10 @@ class GlassCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = accentColor ?? OdinColors.accent;
     final radius = BorderRadius.circular(22);
+    final panel = raised ? OdinColors.glassRaised : OdinColors.glassPanel;
+    final panelEnd = OdinColors.isDark
+        ? (raised ? const Color(0xB816162A) : const Color(0x9616162A))
+        : OdinColors.panelSolid;
 
     Widget card = Container(
       decoration: BoxDecoration(
@@ -825,17 +849,15 @@ class GlassCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: raised ? accent.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.35),
-            blurRadius: raised ? 36 : 20,
+            color: raised ? accent.withValues(alpha: OdinColors.isDark ? 0.12 : 0.08) : OdinColors.shadow,
+            blurRadius: raised ? 36 : (OdinColors.isDark ? 20 : 16),
             offset: Offset(0, raised ? 14 : 8),
           ),
         ],
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: raised
-              ? [const Color(0xD9282840), const Color(0xB816162A)]
-              : [const Color(0xB81C1C2E), const Color(0x9616162A)],
+          colors: [panel, panelEnd],
         ),
       ),
       child: clipContent
@@ -1181,11 +1203,11 @@ class OdinGlassNavBar extends StatelessWidget {
             height: 68,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              color: const Color(0xEE12121C),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              color: OdinColors.navFill,
+              border: Border.all(color: OdinColors.panelBorder),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.45),
+                  color: OdinColors.shadow,
                   blurRadius: 28,
                   offset: const Offset(0, 10),
                 ),
@@ -1259,7 +1281,12 @@ class OdinGlassNavBar extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 3),
-                                  Text(d.label),
+                                  Text(
+                                    d.label,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ],
                               ),
                             ),
@@ -1307,7 +1334,7 @@ class OdinProAppBar extends StatelessWidget implements PreferredSizeWidget {
         filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xCC0B0B14),
+            color: OdinColors.appBarFill,
             border: Border(
               bottom: BorderSide(color: OdinColors.accent.withValues(alpha: 0.22)),
             ),
@@ -1370,7 +1397,7 @@ class OdinProAppBar extends StatelessWidget implements PreferredSizeWidget {
                             club,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w900,
                               letterSpacing: -0.3,

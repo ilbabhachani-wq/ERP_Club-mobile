@@ -17,7 +17,7 @@ class JoueurChemistryScreen extends StatelessWidget {
         children: [
           const SectionTitle('Chimie d\'équipe'),
           if (chemistry.isEmpty)
-            const GlassCard(
+            GlassCard(
               child: Text('Aucune donnée de chimie', style: TextStyle(color: OdinColors.textMuted)),
             )
           else

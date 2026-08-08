@@ -10,6 +10,8 @@ import '../../core/widgets/odin_logo.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/analyste_provider.dart';
 import '../../providers/avatar_provider.dart';
+import '../../providers/preparateur_provider.dart';
+import '../../providers/responsable_provider.dart';
 import '../../providers/scout_provider.dart';
 import '../../providers/viiv_provider.dart';
 import '../../services/onboarding_service.dart';
@@ -55,14 +57,24 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     if (auth.isAuthenticated && auth.user != null) {
       final user = auth.user!;
       await context.read<AvatarProvider>().bindUser(user.email);
-      if (user.isAnalyste) {
-        await context.read<AnalysteDataProvider>().load();
-        await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
-      } else if (user.isScout) {
-        await context.read<ScoutDataProvider>().load();
-      } else {
-        await context.read<JoueurDataProvider>().load(user);
-        await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
+      try {
+        if (user.isAnalyste) {
+          await context.read<AnalysteDataProvider>().load();
+          await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
+        } else if (user.isScout) {
+          await context.read<ScoutDataProvider>().load();
+        } else if (user.isPreparateur) {
+          await context.read<PreparateurDataProvider>().load();
+        } else if (user.isResponsable) {
+          await context.read<ResponsableDataProvider>().load(
+                orgId: user.organization?.id,
+              );
+        } else {
+          await context.read<JoueurDataProvider>().load(user);
+          await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
+        }
+      } catch (_) {
+        // Still navigate — screens can pull-to-refresh / shell safety-net will retry.
       }
     }
 
@@ -95,13 +107,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(
+                SizedBox(
                   width: 260,
                   height: 260,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      _OrbitRing(),
+                      const _OrbitRing(),
                       Flip3DReveal(
                         child: Hero(
                           tag: kOdinLogoHeroTag,

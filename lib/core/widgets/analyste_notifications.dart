@@ -161,14 +161,14 @@ Future<void> showAnalysteNotifications(BuildContext context) async {
                                         Expanded(
                                           child: Text(
                                             n.title,
-                                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
                                           ),
                                         ),
                                         if (n.unread)
                                           Container(
                                             width: 8,
                                             height: 8,
-                                            decoration: const BoxDecoration(
+                                            decoration: BoxDecoration(
                                               color: OdinColors.accent,
                                               shape: BoxShape.circle,
                                             ),
@@ -178,12 +178,12 @@ Future<void> showAnalysteNotifications(BuildContext context) async {
                                     const SizedBox(height: 4),
                                     Text(
                                       n.body,
-                                      style: const TextStyle(fontSize: 12, color: OdinColors.textSecondary, height: 1.35),
+                                      style: TextStyle(fontSize: 12, color: OdinColors.textSecondary, height: 1.35),
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
                                       n.time,
-                                      style: const TextStyle(fontSize: 10, color: OdinColors.textMuted, fontWeight: FontWeight.w600),
+                                      style: TextStyle(fontSize: 10, color: OdinColors.textMuted, fontWeight: FontWeight.w600),
                                     ),
                                   ],
                                 ),
@@ -217,7 +217,7 @@ class AnalysteNotificationBell extends StatelessWidget {
       icon: Stack(
         clipBehavior: Clip.none,
         children: [
-          const Icon(Icons.notifications_outlined, color: OdinColors.textSecondary),
+          Icon(Icons.notifications_outlined, color: OdinColors.textSecondary),
           if (unread > 0)
             Positioned(
               right: -2,

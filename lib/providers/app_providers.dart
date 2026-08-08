@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/player_models.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
@@ -87,6 +88,10 @@ class AuthProvider extends ChangeNotifier {
     await _auth.logout();
     _user = null;
     notifyListeners();
+  }
+
+  Future<void> changePassword(String currentPassword, String newPassword) {
+    return _auth.changePassword(currentPassword, newPassword);
   }
 }
 
@@ -225,12 +230,39 @@ class JoueurDataProvider extends ChangeNotifier {
 }
 
 class LocaleProvider extends ChangeNotifier {
-  String _locale = 'fr';
-  String get locale => _locale;
+  LocaleProvider() {
+    _load();
+  }
 
-  void setLocale(String locale) {
+  static const _key = 'odin_locale';
+
+  String _locale = 'fr';
+  bool _ready = false;
+
+  String get locale => _locale;
+  bool get ready => _ready;
+  Locale get flutterLocale => Locale(_locale);
+
+  Future<void> _load() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_key);
+      if (raw == 'en' || raw == 'ar' || raw == 'fr') {
+        _locale = raw!;
+      }
+    } catch (_) {}
+    _ready = true;
+    notifyListeners();
+  }
+
+  Future<void> setLocale(String locale) async {
     if (_locale == locale) return;
+    if (locale != 'fr' && locale != 'en' && locale != 'ar') return;
     _locale = locale;
     notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_key, locale);
+    } catch (_) {}
   }
 }

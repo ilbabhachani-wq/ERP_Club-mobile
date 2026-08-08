@@ -51,13 +51,23 @@ class OdinUser {
 
   bool get isAnalyste => role == 'analyste';
   bool get isScout => role == 'scout';
+  bool get isPreparateur => role == 'preparateur';
+  bool get isResponsable => role == 'responsable';
   bool get isJoueur =>
-      role == 'joueur' || (playerId != null && playerId!.isNotEmpty && role != 'analyste' && role != 'scout');
+      role == 'joueur' ||
+      (playerId != null &&
+          playerId!.isNotEmpty &&
+          role != 'analyste' &&
+          role != 'scout' &&
+          role != 'preparateur' &&
+          role != 'responsable');
 
   /// Landing route after login / splash.
   String get homeRoute {
     if (isAnalyste) return '/analyste';
     if (isScout) return '/scout';
+    if (isPreparateur) return '/preparateur';
+    if (isResponsable) return '/responsable';
     return '/';
   }
 

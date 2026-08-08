@@ -265,7 +265,7 @@ class _ScoutSettingsScreenState extends State<ScoutSettingsScreen> {
           OdinAnimations.fadeUp(
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -381,9 +381,9 @@ class _ScoutSettingsScreenState extends State<ScoutSettingsScreen> {
                       children: [
                         Text(
                           _nameCtrl.text.trim().isEmpty ? 'Scout' : _nameCtrl.text.trim(),
-                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
                         ),
-                        Text(_meta?.role ?? 'Scout', style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                        Text(_meta?.role ?? 'Scout', style: TextStyle(color: AppColors.muted, fontSize: 13)),
                         Text(email, style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12)),
                         const SizedBox(height: 4),
                         Text(
@@ -673,7 +673,7 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 90, child: Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12))),
+          SizedBox(width: 90, child: Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12))),
           Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
         ],
       ),

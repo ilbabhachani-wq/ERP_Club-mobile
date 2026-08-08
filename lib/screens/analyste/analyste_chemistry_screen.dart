@@ -345,7 +345,7 @@ class _AnalysteChemistryScreenState extends State<AnalysteChemistryScreen> {
               children: [
                 Text(
                   '${selected.a} ↔ ${selected.b}',
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
                 ),
                 const SizedBox(height: 14),
                 _MetricBar(label: 'Global', value: selected.score, color: _chemColor(selected.score.toDouble())),
@@ -374,7 +374,7 @@ class _AnalysteChemistryScreenState extends State<AnalysteChemistryScreen> {
                     color: const Color(0xFFEF4444).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.priority_high_rounded, color: Color(0xFFEF4444), size: 18),
+                  child: Icon(Icons.priority_high_rounded, color: Color(0xFFEF4444), size: 18),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -387,7 +387,7 @@ class _AnalysteChemistryScreenState extends State<AnalysteChemistryScreen> {
                       ),
                       Text(
                         'Score ${worst.score}% — travail de combinaison recommandé',
-                        style: const TextStyle(color: OdinColors.textMuted, fontSize: 12),
+                        style: TextStyle(color: OdinColors.textMuted, fontSize: 12),
                       ),
                     ],
                   ),
@@ -481,7 +481,7 @@ class _Kpi extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: color),
           ),
-          Text(label, style: const TextStyle(fontSize: 10, color: OdinColors.textMuted)),
+          Text(label, style: TextStyle(fontSize: 10, color: OdinColors.textMuted)),
         ],
       ),
     );
@@ -503,7 +503,7 @@ class _MetricBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(label, style: const TextStyle(fontSize: 12, color: OdinColors.textMuted))),
+              Expanded(child: Text(label, style: TextStyle(fontSize: 12, color: OdinColors.textMuted))),
               Text('$value', style: TextStyle(fontWeight: FontWeight.w800, color: color)),
             ],
           ),

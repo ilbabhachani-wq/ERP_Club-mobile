@@ -171,9 +171,26 @@ class _ViivScanScreenState extends State<ViivScanScreen> {
               const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  ble.error!,
-                  style: const TextStyle(color: AppColors.danger, fontSize: 12, height: 1.3),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ble.error!,
+                      style: const TextStyle(color: AppColors.danger, fontSize: 12, height: 1.3),
+                    ),
+                    if (ble.permissionPermanentlyDenied) ...[
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        onPressed: () => ble.openSettings(),
+                        icon: const Icon(Icons.settings_rounded, size: 18),
+                        label: const Text('Ouvrir les Réglages'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF22D3EE),
+                          side: BorderSide(color: const Color(0xFF22D3EE).withValues(alpha: 0.5)),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],

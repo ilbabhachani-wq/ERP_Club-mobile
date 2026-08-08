@@ -11,6 +11,84 @@ const kOdinLogoHeroTag = 'odin-app-logo';
 /// Hero tag carte FIFA.
 const kFifaCardHeroTag = 'odin-player-card';
 
+/// Perspective 3D tilt (splash orbit / onboarding page turn).
+class Perspective3D extends StatelessWidget {
+  const Perspective3D({
+    super.key,
+    required this.child,
+    this.rotateX = 0,
+    this.rotateY = 0,
+    this.depth = 0.001,
+    this.alignment = Alignment.center,
+  });
+
+  final Widget child;
+  final double rotateX;
+  final double rotateY;
+  final double depth;
+  final Alignment alignment;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform(
+      alignment: alignment,
+      transform: Matrix4.identity()
+        ..setEntry(3, 2, depth)
+        ..rotateX(rotateX)
+        ..rotateY(rotateY),
+      child: child,
+    );
+  }
+}
+
+/// Logo flip-in reveal for splash.
+class Flip3DReveal extends StatefulWidget {
+  const Flip3DReveal({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<Flip3DReveal> createState() => _Flip3DRevealState();
+}
+
+class _Flip3DRevealState extends State<Flip3DReveal> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _turn;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    _turn = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _turn,
+      builder: (_, child) {
+        final t = _turn.value;
+        return Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.identity()
+            ..setEntry(3, 2, 0.0015)
+            ..rotateY((1 - t) * math.pi * 0.85)
+            ..scaleByDouble(0.75 + 0.25 * t, 0.75 + 0.25 * t, 0.75 + 0.25 * t, 1),
+          child: Opacity(opacity: t.clamp(0.0, 1.0), child: child),
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
 /// Curves SaaS — jamais linear.
 abstract final class OdinCurves {
   static const entrance = Curves.easeOutCubic;
@@ -324,10 +402,10 @@ class RollingDigit extends StatelessWidget {
               value,
               key: ValueKey(value),
               style: style ??
-                  const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: OdinColors.textPrimary),
+                  TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: OdinColors.textPrimary),
             ),
           ),
-          Text(label, style: const TextStyle(fontSize: 11, color: OdinColors.textMuted)),
+          Text(label, style: TextStyle(fontSize: 11, color: OdinColors.textMuted)),
         ],
       ),
     );
@@ -539,7 +617,7 @@ class _ProgressRadarPainter extends CustomPainter {
         final tp = TextPainter(
           text: TextSpan(
             text: labels[i],
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: OdinColors.textMuted),
+            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: OdinColors.textMuted),
           ),
           textDirection: TextDirection.ltr,
         )..layout();
