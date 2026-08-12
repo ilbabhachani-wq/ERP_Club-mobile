@@ -8,6 +8,7 @@ import '../../core/widgets/fifa_card_utils.dart';
 import '../../core/widgets/fifa_player_card.dart';
 import '../../core/widgets/odin_widgets.dart';
 import '../../providers/app_providers.dart';
+import '../../providers/avatar_provider.dart';
 import '../../providers/viiv_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
@@ -288,6 +289,12 @@ class _HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const cardWidth = 210.0;
+    final avatarUrl = context.watch<AvatarProvider>().avatarUrl;
+    final photo = (player.photoUrl as String?)?.trim();
+    final avatar = avatarUrl?.trim();
+    final resolvedPhoto = (avatar != null && avatar.isNotEmpty)
+        ? avatar
+        : (photo != null && photo.isNotEmpty ? photo : null);
 
     return OdinAnimations.fadeUp(
       GlassCard(
@@ -327,7 +334,7 @@ class _HeroSection extends StatelessWidget {
                       nationality: player.nationality ?? '',
                       flag: nationalityFlag(player.nationality),
                       club: club,
-                      photoUrl: player.photoUrl,
+                      photoUrl: resolvedPhoto,
                       badge: stats != null && stats.form >= 75 ? '🔥 FORME' : null,
                     )
                         .animate()

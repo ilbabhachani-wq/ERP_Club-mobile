@@ -5,12 +5,16 @@ import 'package:provider/provider.dart';
 import '../../providers/avatar_provider.dart';
 import '../../services/imgbb_service.dart';
 import '../theme/odin_colors.dart';
+import '../utils/png_cutout.dart';
 
 /// Bottom sheet galerie / caméra / supprimer + upload ImgBB.
+///
+/// [fifaCutout] — PNG transparent only (carte FIFA).
 Future<void> showAvatarChangeSheet(
   BuildContext context, {
   Future<void> Function(String url)? onUploaded,
   Future<void> Function()? onCleared,
+  bool fifaCutout = false,
 }) async {
   HapticFeedback.selectionClick();
   final avatar = context.read<AvatarProvider>();
@@ -35,21 +39,33 @@ Future<void> showAvatarChangeSheet(
               ),
             ),
             const SizedBox(height: 14),
-            const Text('Photo de profil', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+            Text(
+              fifaCutout ? 'Photo carte FIFA' : 'Photo de profil',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            ),
             const SizedBox(height: 4),
-             Text(
-              'Upload via ImgBB',
+            Text(
+              fifaCutout
+                  ? 'PNG transparent uniquement (sans fond)'
+                  : 'Upload via ImgBB',
+              textAlign: TextAlign.center,
               style: TextStyle(fontSize: 12, color: OdinColors.textMuted),
             ),
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.photo_library_rounded, color: OdinColors.accent),
               title: const Text('Galerie', style: TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: fifaCutout
+                  ? const Text('Fichier .png avec fond transparent', style: TextStyle(fontSize: 12))
+                  : null,
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
             ListTile(
               leading: const Icon(Icons.photo_camera_rounded, color: OdinColors.accent),
               title: const Text('Caméra', style: TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: fifaCutout
+                  ? const Text('Doit produire un PNG transparent', style: TextStyle(fontSize: 12))
+                  : null,
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             if (avatar.avatarUrl != null)
@@ -71,7 +87,11 @@ Future<void> showAvatarChangeSheet(
   if (source == null || !context.mounted) return;
 
   Future<void> upload() async {
-    await avatar.pickAndUpload(source: source);
+    if (fifaCutout) {
+      await avatar.pickAndUploadFifaCutout(source: source);
+    } else {
+      await avatar.pickAndUpload(source: source);
+    }
     final url = avatar.avatarUrl;
     if (url != null && onUploaded != null) await onUploaded(url);
   }
@@ -81,6 +101,12 @@ Future<void> showAvatarChangeSheet(
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Photo mise à jour ✓'), backgroundColor: Color(0xFF22C55E)),
+      );
+    }
+  } on PngCutoutException catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: OdinColors.danger),
       );
     }
   } on ImgbbException catch (e) {

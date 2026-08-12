@@ -15,151 +15,209 @@ Future<void> showOdinSettingsSheet(
   HapticFeedback.lightImpact();
   await showModalBottomSheet<void>(
     context: context,
-    backgroundColor: OdinColors.panelSolid,
+    // Transparent so the Consumer can paint a live theme background.
+    backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-    ),
     builder: (ctx) {
       return Consumer2<ThemeProvider, LocaleProvider>(
         builder: (ctx, theme, locale, _) {
-          return SafeArea(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 12,
-                bottom: MediaQuery.viewInsetsOf(ctx).bottom + 20,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: OdinColors.panelBorder,
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                    ),
+          // Keep palette in sync while the sheet is open (theme chips live here).
+          if (theme.mode == ThemeMode.light) {
+            OdinColors.apply(OdinPalette.light);
+          } else if (theme.mode == ThemeMode.dark) {
+            OdinColors.apply(OdinPalette.dark);
+          } else {
+            OdinColors.applyBrightness(MediaQuery.platformBrightnessOf(ctx));
+          }
+
+          final isDark = OdinColors.isDark;
+          final panel = OdinColors.panelSolid;
+          final text = OdinColors.textPrimary;
+          final muted = OdinColors.textMuted;
+          final secondary = OdinColors.textSecondary;
+          final border = OdinColors.panelBorder;
+          final fill = OdinColors.inputFill;
+
+          return Theme(
+            data: Theme.of(ctx).copyWith(
+              brightness: isDark ? Brightness.dark : Brightness.light,
+              colorScheme: Theme.of(ctx).colorScheme.copyWith(
+                    brightness: isDark ? Brightness.dark : Brightness.light,
+                    surface: panel,
+                    onSurface: text,
                   ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: OdinColors.accent.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
+              chipTheme: Theme.of(ctx).chipTheme.copyWith(
+                    backgroundColor: fill,
+                    selectedColor: OdinColors.accent.withValues(alpha: 0.18),
+                    labelStyle: TextStyle(color: secondary, fontSize: 12),
+                    secondaryLabelStyle: const TextStyle(color: OdinColors.accent, fontSize: 12),
+                    side: BorderSide(color: border),
+                  ),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 12,
+                  right: 12,
+                  bottom: MediaQuery.viewInsetsOf(ctx).bottom + 8,
+                ),
+                child: Material(
+                  key: ValueKey('settings-skin-${theme.mode.name}-$isDark'),
+                  color: panel,
+                  elevation: 8,
+                  shadowColor: OdinColors.shadow,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: border,
+                              borderRadius: BorderRadius.circular(99),
+                            ),
+                          ),
                         ),
-                        child: const Icon(Icons.settings_rounded, color: OdinColors.accent, size: 20),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        const SizedBox(height: 14),
+                        Row(
                           children: [
-                            Text(
-                              'Paramètres',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                color: OdinColors.textPrimary,
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: OdinColors.accent.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.settings_rounded, color: OdinColors.accent, size: 20),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Paramètres',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w900,
+                                      color: text,
+                                    ),
+                                  ),
+                                  if (roleLabel != null)
+                                    Text(
+                                      roleLabel,
+                                      style: TextStyle(fontSize: 12, color: muted),
+                                    ),
+                                ],
                               ),
                             ),
-                            if (roleLabel != null)
-                              Text(
-                                roleLabel,
-                                style: TextStyle(fontSize: 12, color: OdinColors.textMuted),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        _SectionLabel('Apparence', color: muted),
+                        const SizedBox(height: 8),
+                        _ThemeModeRow(theme: theme),
+                        const SizedBox(height: 16),
+                        _SectionLabel('Langue', color: muted),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            for (final e in [('fr', 'FR'), ('en', 'EN'), ('ar', 'AR')])
+                              ChoiceChip(
+                                label: Text(e.$2),
+                                selected: locale.locale == e.$1,
+                                labelStyle: TextStyle(
+                                  color: locale.locale == e.$1 ? OdinColors.accent : secondary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                selectedColor: OdinColors.accent.withValues(alpha: 0.18),
+                                backgroundColor: fill,
+                                side: BorderSide(
+                                  color: locale.locale == e.$1
+                                      ? OdinColors.accent.withValues(alpha: 0.45)
+                                      : border,
+                                ),
+                                onSelected: (_) async {
+                                  await locale.setLocale(e.$1);
+                                  if (!ctx.mounted) return;
+                                  final label = switch (e.$1) {
+                                    'en' => 'English',
+                                    'ar' => 'العربية',
+                                    _ => 'Français',
+                                  };
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        e.$1 == 'ar'
+                                            ? 'اللغة: $label (واجهة من اليمين لليسار)'
+                                            : 'Langue: $label',
+                                      ),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
                               ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  _SectionLabel('Apparence'),
-                  const SizedBox(height: 8),
-                  _ThemeModeRow(theme: theme),
-                  const SizedBox(height: 16),
-                  _SectionLabel('Langue'),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      for (final e in [('fr', 'FR'), ('en', 'EN'), ('ar', 'AR')])
-                        ChoiceChip(
-                          label: Text(e.$2),
-                          selected: locale.locale == e.$1,
-                          onSelected: (_) async {
-                            await locale.setLocale(e.$1);
-                            if (!ctx.mounted) return;
-                            final label = switch (e.$1) {
-                              'en' => 'English',
-                              'ar' => 'العربية',
-                              _ => 'Français',
-                            };
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  e.$1 == 'ar'
-                                      ? 'اللغة: $label (واجهة من اليمين لليسار)'
-                                      : 'Langue: $label',
-                                ),
-                                duration: const Duration(seconds: 2),
+                        const SizedBox(height: 6),
+                        Text(
+                          locale.locale == 'ar'
+                              ? 'التواريخ واتجاه النص يتبعان اللغة المختارة'
+                              : locale.locale == 'en'
+                                  ? 'Dates & system UI follow the selected language'
+                                  : 'Les dates et l’interface système suivent la langue',
+                          style: TextStyle(fontSize: 11, color: muted),
+                        ),
+                        if (links.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          _SectionLabel('Espace', color: muted),
+                          const SizedBox(height: 8),
+                          for (final link in links)
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(link.icon, color: OdinColors.accent),
+                              title: Text(
+                                link.label,
+                                style: TextStyle(color: text, fontWeight: FontWeight.w700),
                               ),
-                            );
+                              subtitle: link.subtitle == null
+                                  ? null
+                                  : Text(link.subtitle!, style: TextStyle(color: muted, fontSize: 12)),
+                              trailing: Icon(Icons.chevron_right_rounded, color: muted),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                context.go(link.route);
+                              },
+                            ),
+                        ],
+                        const SizedBox(height: 12),
+                        Divider(height: 1, color: border),
+                        const SizedBox(height: 8),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.logout_rounded, color: OdinColors.danger),
+                          title: const Text(
+                            'Déconnexion',
+                            style: TextStyle(color: OdinColors.danger, fontWeight: FontWeight.w800),
+                          ),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            context.read<AuthProvider>().logout();
                           },
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    locale.locale == 'ar'
-                        ? 'التواريخ واتجاه النص يتبعان اللغة المختارة'
-                        : locale.locale == 'en'
-                            ? 'Dates & system UI follow the selected language'
-                            : 'Les dates et l’interface système suivent la langue',
-                    style: TextStyle(fontSize: 11, color: OdinColors.textMuted),
-                  ),
-                  if (links.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    _SectionLabel('Espace'),
-                    const SizedBox(height: 8),
-                    for (final link in links)
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(link.icon, color: OdinColors.accent),
-                        title: Text(link.label, style: TextStyle(color: OdinColors.textPrimary, fontWeight: FontWeight.w700)),
-                        subtitle: link.subtitle == null
-                            ? null
-                            : Text(link.subtitle!, style: TextStyle(color: OdinColors.textMuted, fontSize: 12)),
-                        trailing: Icon(Icons.chevron_right_rounded, color: OdinColors.textMuted),
-                        onTap: () {
-                          Navigator.pop(ctx);
-                          context.go(link.route);
-                        },
-                      ),
-                  ],
-                  const SizedBox(height: 12),
-                  const Divider(height: 1),
-                  const SizedBox(height: 8),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.logout_rounded, color: OdinColors.danger),
-                    title: const Text(
-                      'Déconnexion',
-                      style: TextStyle(color: OdinColors.danger, fontWeight: FontWeight.w800),
+                      ],
                     ),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      context.read<AuthProvider>().logout();
-                    },
                   ),
-                ],
+                ),
               ),
             ),
           );
@@ -184,8 +242,9 @@ class OdinSettingsLink {
 }
 
 class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
+  const _SectionLabel(this.text, {required this.color});
   final String text;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -195,7 +254,7 @@ class _SectionLabel extends StatelessWidget {
         fontSize: 11,
         fontWeight: FontWeight.w800,
         letterSpacing: 0.8,
-        color: OdinColors.textMuted,
+        color: color,
       ),
     );
   }
@@ -246,6 +305,11 @@ class _ThemeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final muted = OdinColors.textMuted;
+    final secondary = OdinColors.textSecondary;
+    final border = OdinColors.panelBorder;
+    final fill = OdinColors.inputFill;
+
     return InkWell(
       onTap: () {
         HapticFeedback.selectionClick();
@@ -257,21 +321,21 @@ class _ThemeChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          color: selected ? OdinColors.accent.withValues(alpha: 0.16) : OdinColors.inputFill,
+          color: selected ? OdinColors.accent.withValues(alpha: 0.16) : fill,
           border: Border.all(
-            color: selected ? OdinColors.accent.withValues(alpha: 0.45) : OdinColors.panelBorder,
+            color: selected ? OdinColors.accent.withValues(alpha: 0.45) : border,
           ),
         ),
         child: Column(
           children: [
-            Icon(icon, size: 20, color: selected ? OdinColors.accent : OdinColors.textMuted),
+            Icon(icon, size: 20, color: selected ? OdinColors.accent : muted),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
-                color: selected ? OdinColors.accent : OdinColors.textSecondary,
+                color: selected ? OdinColors.accent : secondary,
               ),
             ),
           ],

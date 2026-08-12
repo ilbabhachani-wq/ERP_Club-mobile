@@ -67,6 +67,14 @@ class _FifaPlayerCardState extends State<FifaPlayerCard> with TickerProviderStat
   }
 
   @override
+  void didUpdateWidget(covariant FifaPlayerCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.photoUrl != widget.photoUrl) {
+      _photoFailed = false;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final tier = fifaCardTier(widget.ovr);
     final attr = getFifaAttributes(widget.radar);
@@ -74,8 +82,12 @@ class _FifaPlayerCardState extends State<FifaPlayerCard> with TickerProviderStat
     final initials = getInitials(widget.name);
     final w = widget.width;
     final h = w * 1.5;
-    final s = w / 220;
-    final showPhoto = widget.photoUrl != null && !_photoFailed;
+    // Web card is 260×390; keep local scale relative to that layout.
+    final s = w / 260;
+    final photo = widget.photoUrl?.trim();
+    final showPhoto = photo != null && photo.isNotEmpty && !_photoFailed;
+    const bottomH = 108.0;
+    const footerBottom = 30.0;
 
     final statRows = [
       (attr.pac, 'PAC', attr.dri, 'DRI'),
@@ -110,187 +122,235 @@ class _FifaPlayerCardState extends State<FifaPlayerCard> with TickerProviderStat
               ),
               child: CustomPaint(
                 foregroundPainter: _UtShinePainter(_shine.value),
-                child: ClipPath(
-                  clipper: _FifaClipper(),
-                  child: Stack(
-                    children: [
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: tier.gradient.map((c) => Color(c)).toList(),
-                          ),
-                        ),
-                        child: const SizedBox.expand(),
-                      ),
-                      CustomPaint(painter: _UtStripePainter(), size: Size.infinite),
-                      CustomPaint(painter: _UtDiagonalStripePainter(), size: Size.infinite),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        height: 108,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [const Color(0x338C5505), Colors.transparent],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 1),
-                          ),
-                        ),
-                      ),
-                      if (showPhoto)
-                        Positioned(
-                          top: -18 * s,
-                          left: w * -0.03,
-                          right: w * -0.03,
-                          bottom: 108 * s + 34 * s,
-                          child: DecoratedBox(
+                // Match web: gold fill is clipped; player cutout sits outside the clip.
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ClipPath(
+                      clipper: _FifaClipper(),
+                      child: Stack(
+                        children: [
+                          DecoratedBox(
                             decoration: BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 22 * s, offset: Offset(0, 14 * s)),
-                              ],
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: tier.gradient.map((c) => Color(c)).toList(),
+                              ),
                             ),
-                            child: Image.network(
-                              widget.photoUrl!,
-                              fit: BoxFit.contain,
-                              alignment: Alignment.bottomCenter,
-                              errorBuilder: (_, __, ___) {
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (mounted) setState(() => _photoFailed = true);
-                                });
-                                return _silhouette(initials, s);
-                              },
+                            child: const SizedBox.expand(),
+                          ),
+                          CustomPaint(painter: _UtStripePainter(), size: Size.infinite),
+                          CustomPaint(painter: _UtDiagonalStripePainter(), size: Size.infinite),
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            height: bottomH * s,
+                            child: const DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [Color(0x338C5505), Colors.transparent],
+                                ),
+                              ),
                             ),
                           ),
-                        )
-                      else
-                        Positioned(
-                          top: 20 * s,
-                          left: 0,
-                          right: 0,
-                          bottom: 108 * s + 34 * s,
-                          child: _silhouette(initials, s),
-                        ),
-                      if (widget.number != '—')
-                        Positioned(
-                          top: 14 * s,
-                          right: 16 * s,
-                          child: Text(
-                            widget.number,
-                            style: TextStyle(
-                              fontSize: 22 * s,
-                              fontWeight: FontWeight.w900,
-                              color: fifaStatColor,
-                              shadows: const [Shadow(color: Color(0x80FFFFFF), offset: Offset(0, 1))],
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 1),
+                              ),
                             ),
                           ),
-                        ),
-                      if (widget.badge != null)
-                        Positioned(
-                          top: 14,
-                          right: 14,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: OdinColors.playerCoral.withValues(alpha: 0.92),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 6)],
-                            ),
-                            child: Text(
-                              widget.badge!,
-                              style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white),
-                            ),
-                          )
-                              .animate(onPlay: (c) => c.repeat(reverse: true))
-                              .scaleXY(begin: 1, end: 1.06, duration: 1200.ms, curve: Curves.easeInOut)
-                              .fade(begin: 1, end: 0.85, duration: 1200.ms),
-                        ),
-                      Positioned(
-                        top: 16 * s,
-                        left: 18 * s,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      top: -28 * s,
+                      left: w * -0.03,
+                      width: w * 1.06,
+                      bottom: (bottomH + footerBottom + 4) * s,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: widget.onPhotoTap,
+                        child: Stack(
+                          alignment: Alignment.bottomCenter,
                           children: [
-                            Text(
-                              '${widget.ovr}',
-                              style: TextStyle(
-                                fontSize: 48 * s,
-                                fontWeight: FontWeight.w900,
-                                color: fifaStatColor,
-                                height: 1,
-                                letterSpacing: -1,
-                                shadows: const [Shadow(color: Color(0x80FFFFFF), offset: Offset(0, 1))],
-                              ),
+                            Positioned.fill(
+                              child: showPhoto
+                                  ? Transform.scale(
+                                      scale: 1.04,
+                                      alignment: Alignment.bottomCenter,
+                                      child: Image.network(
+                                        photo,
+                                        fit: BoxFit.contain,
+                                        alignment: Alignment.bottomCenter,
+                                        filterQuality: FilterQuality.high,
+                                        errorBuilder: (_, __, ___) {
+                                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                                            if (mounted) setState(() => _photoFailed = true);
+                                          });
+                                          return _silhouette(initials, s);
+                                        },
+                                      ),
+                                    )
+                                  : _silhouette(initials, s),
                             ),
-                            Text(
-                              widget.position,
-                              style: TextStyle(
-                                fontSize: 14 * s,
-                                fontWeight: FontWeight.w800,
-                                color: fifaStatColor,
-                                letterSpacing: 0.5,
+                            if (widget.onPhotoTap != null)
+                              Positioned(
+                                bottom: 8 * s,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 12 * s, vertical: 6 * s),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xE00E0E1C),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: OdinColors.playerCoral.withValues(alpha: 0.45)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.camera_alt_rounded, size: 13 * s, color: OdinColors.playerCoral),
+                                      SizedBox(width: 6 * s),
+                                      Text(
+                                        'Photo PNG',
+                                        style: TextStyle(
+                                          fontSize: 11 * s,
+                                          fontWeight: FontWeight.w700,
+                                          color: OdinColors.playerCoral,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
                           ],
                         ),
                       ),
-                      Positioned(
-                        left: 18 * s,
-                        right: 18 * s,
-                        top: h * 0.38,
-                        child: Column(
-                          children: [
-                            for (final row in statRows) ...[
-                              _statRow(row.$1, row.$2, row.$3, row.$4, s),
-                              if (row != statRows.last) SizedBox(height: 10 * s),
-                            ],
-                          ],
-                        ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 30 * s,
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                    ),
+                    IgnorePointer(
+                      child: Stack(
+                        children: [
+                          if (widget.number != '—')
+                            Positioned(
+                              top: 14 * s,
+                              right: 16 * s,
+                              child: Text(
+                                widget.number,
+                                style: TextStyle(
+                                  fontSize: 22 * s,
+                                  fontWeight: FontWeight.w900,
+                                  color: fifaStatColor,
+                                  shadows: const [Shadow(color: Color(0x80FFFFFF), offset: Offset(0, 1))],
+                                ),
+                              ),
+                            ),
+                          if (widget.badge != null)
+                            Positioned(
+                              top: 14 * s,
+                              right: 14 * s,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 10 * s, vertical: 5 * s),
+                                decoration: BoxDecoration(
+                                  color: OdinColors.playerCoral.withValues(alpha: 0.92),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 6)],
+                                ),
+                                child: Text(
+                                  widget.badge!,
+                                  style: TextStyle(fontSize: 8 * s, fontWeight: FontWeight.w900, color: Colors.white),
+                                ),
+                              )
+                                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                                  .scaleXY(begin: 1, end: 1.06, duration: 1200.ms, curve: Curves.easeInOut)
+                                  .fade(begin: 1, end: 0.85, duration: 1200.ms),
+                            ),
+                          ClipPath(
+                            clipper: _FifaClipper(),
+                            child: Stack(
                               children: [
-                                if (widget.flag.isNotEmpty)
-                                  Text(widget.flag, style: TextStyle(fontSize: 16 * s)),
-                                if (widget.flag.isNotEmpty) SizedBox(width: 12 * s),
-                                _leagueLogo(s),
-                                SizedBox(width: 12 * s),
-                                _clubLogo(s),
+                                Positioned(
+                                  top: 16 * s,
+                                  left: 18 * s,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${widget.ovr}',
+                                        style: TextStyle(
+                                          fontSize: 48 * s,
+                                          fontWeight: FontWeight.w900,
+                                          color: fifaStatColor,
+                                          height: 1,
+                                          letterSpacing: -1,
+                                          shadows: const [Shadow(color: Color(0x80FFFFFF), offset: Offset(0, 1))],
+                                        ),
+                                      ),
+                                      Text(
+                                        widget.position,
+                                        style: TextStyle(
+                                          fontSize: 14 * s,
+                                          fontWeight: FontWeight.w800,
+                                          color: fifaStatColor,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Positioned(
+                                  left: 18 * s,
+                                  right: 18 * s,
+                                  top: h * 0.38,
+                                  child: Column(
+                                    children: [
+                                      for (final row in statRows) ...[
+                                        _statRow(row.$1, row.$2, row.$3, row.$4, s),
+                                        if (row != statRows.last) SizedBox(height: 10 * s),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                Positioned(
+                                  left: 0,
+                                  right: 0,
+                                  bottom: footerBottom * s,
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          if (widget.flag.isNotEmpty)
+                                            Text(widget.flag, style: TextStyle(fontSize: 16 * s)),
+                                          if (widget.flag.isNotEmpty) SizedBox(width: 12 * s),
+                                          _leagueLogo(s),
+                                          SizedBox(width: 12 * s),
+                                          _clubLogo(s),
+                                        ],
+                                      ),
+                                      SizedBox(height: 10 * s),
+                                      Text(
+                                        displayName,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 20 * s,
+                                          fontWeight: FontWeight.w800,
+                                          color: fifaStatColor,
+                                          letterSpacing: 0.5,
+                                          shadows: const [Shadow(color: Color(0x73FFFFFF), offset: Offset(0, 1))],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
-                            SizedBox(height: 10 * s),
-                            Text(
-                              displayName,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 20 * s,
-                                fontWeight: FontWeight.w800,
-                                color: fifaStatColor,
-                                letterSpacing: 0.5,
-                                shadows: const [Shadow(color: Color(0x73FFFFFF), offset: Offset(0, 1))],
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
