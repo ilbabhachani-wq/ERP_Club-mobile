@@ -119,7 +119,10 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final loggingIn = context.select<AuthProvider, bool>((a) => a.loggingIn);
 
-    return Scaffold(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.opaque,
+      child: Scaffold(
       backgroundColor: OdinColors.canvas,
       body: Stack(
         children: [
@@ -131,6 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   duration: const Duration(milliseconds: 450),
                   curve: Curves.easeOut,
                   child: SingleChildScrollView(
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 420),
@@ -150,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 .fadeIn(duration: 500.ms)
                                 .slideY(begin: -0.15, end: 0, curve: Curves.easeOutCubic),
                             const SizedBox(height: 10),
-                            const Text(
+                            Text(
                               'Football Intelligence Platform',
                               style: TextStyle(
                                 color: OdinColors.accent,
@@ -186,7 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(999),
                                     border: Border.all(color: OdinColors.panelBorder),
-                                    color: Colors.white.withValues(alpha: 0.04),
+                                    color: OdinColors.inputFill,
                                   ),
                                   child: Text(
                                     e.value,
@@ -211,9 +215,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.stretch,
                                     children: [
-                                      const Text(
+                                      Text(
                                         'Connexion',
-                                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.3),
+                                        style: TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: -0.3,
+                                          color: OdinColors.textPrimary,
+                                        ),
                                       )
                                           .animate(delay: 320.ms)
                                           .fadeIn()
@@ -283,7 +292,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           if (!_booted)
             Container(
-              color: const Color(0xFF0D0D18),
+              color: OdinColors.canvas,
               child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -304,6 +313,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
         ],
       ),
+    ),
     );
   }
 }

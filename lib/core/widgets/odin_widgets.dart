@@ -505,9 +505,16 @@ class _AuthGlassCardState extends State<AuthGlassCard> with SingleTickerProvider
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: OdinColors.panelBorder),
-          boxShadow: const [
-            BoxShadow(color: Color(0x66000000), blurRadius: 60, offset: Offset(0, 24)),
-            BoxShadow(color: Color(0x266366F1), blurRadius: 80),
+          boxShadow: [
+            BoxShadow(
+              color: OdinColors.isDark ? const Color(0x66000000) : OdinColors.shadow,
+              blurRadius: OdinColors.isDark ? 60 : 28,
+              offset: const Offset(0, 24),
+            ),
+            BoxShadow(
+              color: const Color(0x266366F1).withValues(alpha: OdinColors.isDark ? 0.15 : 0.08),
+              blurRadius: 80,
+            ),
           ],
         ),
         child: ClipRRect(
@@ -516,12 +523,17 @@ class _AuthGlassCardState extends State<AuthGlassCard> with SingleTickerProvider
             filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
             child: Container(
               padding: widget.padding,
-              decoration: const BoxDecoration(
-                color: Color(0x8C0F1423),
+              decoration: BoxDecoration(
+                color: OdinColors.isDark ? const Color(0x8C0F1423) : OdinColors.glassRaised,
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0x8C0F1423), Color(0x73101420)],
+                  colors: OdinColors.isDark
+                      ? const [Color(0x8C0F1423), Color(0x73101420)]
+                      : [
+                          OdinColors.glassRaised,
+                          OdinColors.glassPanel,
+                        ],
                 ),
               ),
               child: widget.child,
@@ -620,6 +632,7 @@ class _OdinGlassTextFieldState extends State<OdinGlassTextField> {
             onFieldSubmitted: widget.onFieldSubmitted,
             validator: widget.validator,
             autofillHints: widget.autofillHints,
+            cursorColor: OdinColors.accent,
             style: TextStyle(color: OdinColors.textPrimary, fontSize: 14),
             decoration: InputDecoration(
               hintText: widget.hint,
@@ -632,7 +645,9 @@ class _OdinGlassTextFieldState extends State<OdinGlassTextField> {
                     )
                   : null,
               filled: true,
-              fillColor: _focused ? const Color(0xFF1E2438) : const Color(0xB81C1C2E),
+              fillColor: _focused
+                  ? (OdinColors.isDark ? const Color(0xFF1E2438) : OdinColors.glassRaised)
+                  : (OdinColors.isDark ? const Color(0xB81C1C2E) : OdinColors.inputFill),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -653,6 +668,7 @@ class _OdinGlassTextFieldState extends State<OdinGlassTextField> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: OdinColors.danger),
               ),
+              errorStyle: TextStyle(color: OdinColors.danger, fontSize: 12),
             ),
           ),
         ),

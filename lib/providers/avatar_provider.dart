@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/utils/png_cutout.dart';
 import '../services/imgbb_service.dart';
 
 /// Avatar profil local (URL ImgBB) par email utilisateur.
@@ -69,6 +73,66 @@ class AvatarProvider extends ChangeNotifier {
       _uploading = false;
       notifyListeners();
     }
+  }
+
+  /// FIFA cutout: PNG with transparent background only (no re-encode).
+  Future<void> pickAndUploadFifaCutout({required ImageSource source}) async {
+    if (_userKey == null) {
+      _error = 'Connectez-vous pour changer la photo';
+      notifyListeners();
+      return;
+    }
+
+    _error = null;
+    notifyListeners();
+
+    final bytes = await _readFifaCutoutBytes(source);
+    if (bytes == null) return;
+
+    if (!isTransparentPng(bytes)) {
+      _error = 'PNG transparent uniquement (fond transparent requis)';
+      notifyListeners();
+      throw PngCutoutException(_error!);
+    }
+
+    _uploading = true;
+    notifyListeners();
+    try {
+      final url = await ImgbbService.uploadBytes(
+        bytes,
+        name: 'odin_fifa_${_userKey}_${DateTime.now().millisecondsSinceEpoch}.png',
+      );
+      await _persist(url);
+    } on ImgbbException catch (e) {
+      _error = e.message;
+      rethrow;
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _uploading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Uint8List?> _readFifaCutoutBytes(ImageSource source) async {
+    if (source == ImageSource.gallery) {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['png'],
+        withData: true,
+      );
+      if (result == null || result.files.isEmpty) return null;
+      final file = result.files.first;
+      if (file.bytes != null && file.bytes!.isNotEmpty) return file.bytes;
+      final path = file.path;
+      if (path == null) return null;
+      return File(path).readAsBytes();
+    }
+
+    final picked = await ImagePicker().pickImage(source: ImageSource.camera);
+    if (picked == null) return null;
+    return picked.readAsBytes();
   }
 
   Future<void> clear() async {

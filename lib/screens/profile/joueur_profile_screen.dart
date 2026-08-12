@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/animations/odin_animations.dart';
 import '../../core/theme/odin_colors.dart';
+import '../../core/widgets/avatar_change_sheet.dart';
 import '../../core/widgets/fifa_card_utils.dart';
 import '../../core/widgets/fifa_player_card.dart';
 import '../../core/widgets/odin_widgets.dart';
 import '../../providers/app_providers.dart';
+import '../../providers/avatar_provider.dart';
 import '../../services/joueur_api.dart';
 
 class JoueurProfileScreen extends StatefulWidget {
@@ -68,6 +70,13 @@ class _JoueurProfileScreenState extends State<JoueurProfileScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _initFields());
     }
 
+    final avatarUrl = context.watch<AvatarProvider>().avatarUrl;
+    final photo = player.photoUrl?.trim();
+    final avatar = avatarUrl?.trim();
+    final resolvedPhoto = (avatar != null && avatar.isNotEmpty)
+        ? avatar
+        : (photo != null && photo.isNotEmpty ? photo : null);
+
     return OdinBackdrop(
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
@@ -83,7 +92,8 @@ class _JoueurProfileScreenState extends State<JoueurProfileScreen> {
               nationality: player.nationality ?? '',
               flag: nationalityFlag(player.nationality),
               club: data.orgProfile?.clubName ?? 'FC Carthage',
-              photoUrl: player.photoUrl,
+              photoUrl: resolvedPhoto,
+              onPhotoTap: () => showAvatarChangeSheet(context, fifaCutout: true),
             ),
           ),
           const SizedBox(height: 16),
