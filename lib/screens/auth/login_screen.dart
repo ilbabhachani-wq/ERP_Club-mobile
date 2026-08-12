@@ -10,12 +10,33 @@ import '../../core/widgets/odin_widgets.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/analyste_provider.dart';
 import '../../providers/avatar_provider.dart';
+import '../../providers/medecin_provider.dart';
+import '../../providers/coach_provider.dart';
 import '../../providers/preparateur_provider.dart';
 import '../../providers/responsable_provider.dart';
 import '../../providers/scout_provider.dart';
 import '../../providers/viiv_provider.dart';
 
 const _featureTags = ['IA', 'Analyse', 'Performance', 'Recrutement'];
+
+bool _isMedecinLogin(String role, String email) {
+  final r = role.toUpperCase();
+  final e = email.toLowerCase();
+  return r == 'MEDICAL' ||
+      r == 'MEDECIN' ||
+      r == 'MEDECIN_CLUB' ||
+      r == 'DOCTOR' ||
+      e == 'asmamed@odin.tn';
+}
+
+bool _isCoachLogin(String role, String email) {
+  final r = role.toUpperCase();
+  final e = email.toLowerCase();
+  return r == 'COACH' ||
+      r == 'ENTRAINEUR' ||
+      r == 'ENTRAÎNEUR' ||
+      e == 'roccocoach@gmail.com';
+}
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -77,12 +98,18 @@ class _LoginScreenState extends State<LoginScreen> {
         await context.read<ResponsableDataProvider>().load(
               orgId: user.organization?.id,
             );
+      } else if (_isMedecinLogin(user.role, user.email)) {
+        await context.read<MedecinProvider>().loadAll();
+      } else if (_isCoachLogin(user.role, user.email)) {
+        await context.read<CoachProvider>().loadAll();
       } else {
         await context.read<JoueurDataProvider>().load(user);
         if (!mounted) return;
         await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
       }
       if (!mounted) return;
+      final isMedecin = _isMedecinLogin(user.role, user.email);
+      final isCoach = _isCoachLogin(user.role, user.email);
       setState(() {
         _roleLabel = user.isAnalyste
             ? 'Espace Analyste'
@@ -92,9 +119,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     ? 'Espace Préparateur'
                     : user.isResponsable
                         ? 'Espace Responsable'
-                        : 'Espace Joueur';
+                        : isMedecin
+                            ? 'Espace Médecin'
+                            : isCoach
+                                ? 'Espace Coach'
+                                : 'Espace Joueur';
         _clubName = user.organization?.clubName ?? 'ODIN Club';
-        _pendingRoute = user.homeRoute;
+        _pendingRoute = isMedecin
+            ? '/medecin/dossiers'
+            : isCoach
+                ? '/coach/entrainements'
+                : user.homeRoute;
         _showAuthOverlay = true;
       });
     } else {

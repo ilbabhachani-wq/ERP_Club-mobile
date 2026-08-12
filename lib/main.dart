@@ -8,12 +8,16 @@ import 'package:go_router/go_router.dart';
 import 'providers/app_providers.dart';
 import 'providers/analyste_provider.dart';
 import 'providers/avatar_provider.dart';
+import 'providers/medecin_provider.dart';
+import 'providers/coach_provider.dart';
 import 'providers/preparateur_provider.dart';
 import 'providers/responsable_provider.dart';
 import 'providers/scout_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/viiv_provider.dart';
 import 'router/app_router.dart';
+import 'services/medecin_api.dart';
+import 'services/coach_api.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +41,8 @@ class _ErpClubPlayerAppState extends State<ErpClubPlayerApp> {
   late final AnalysteDataProvider _analysteData;
   late final ScoutDataProvider _scoutData;
   late final PreparateurDataProvider _preparateurData;
+  late final MedecinProvider _medecinData;
+  late final CoachProvider _coachData;
   late final ResponsableDataProvider _responsableData;
   late final ViivProvider _viiv;
   late final AvatarProvider _avatar;
@@ -53,6 +59,8 @@ class _ErpClubPlayerAppState extends State<ErpClubPlayerApp> {
     _analysteData = AnalysteDataProvider(_auth.api);
     _scoutData = ScoutDataProvider(_auth.api);
     _preparateurData = PreparateurDataProvider(_auth.api);
+    _medecinData = MedecinProvider(MedecinApi(_auth.api));
+    _coachData = CoachProvider(CoachApi(_auth.api));
     _responsableData = ResponsableDataProvider(_auth.api);
     _viiv = ViivProvider(_auth.api);
     _avatar = AvatarProvider();
@@ -82,6 +90,8 @@ class _ErpClubPlayerAppState extends State<ErpClubPlayerApp> {
         ChangeNotifierProvider.value(value: _analysteData),
         ChangeNotifierProvider.value(value: _scoutData),
         ChangeNotifierProvider.value(value: _preparateurData),
+        ChangeNotifierProvider.value(value: _medecinData),
+        ChangeNotifierProvider.value(value: _coachData),
         ChangeNotifierProvider.value(value: _responsableData),
         ChangeNotifierProvider.value(value: _viiv),
         ChangeNotifierProvider.value(value: _avatar),

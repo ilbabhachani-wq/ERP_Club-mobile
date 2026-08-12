@@ -127,19 +127,30 @@ class MessagesApi {
 
   Future<List<dynamic>> getContacts({String search = ''}) async {
     final data = await _api.get('/messages/contacts?search=$search');
-    return data is List ? data : [];
+    if (data is List) return data;
+    if (data is Map) {
+      final items = data['items'] ?? data['searchResults'];
+      if (items is List) return List<dynamic>.from(items);
+    }
+    return [];
   }
 
   Future<List<dynamic>> getThread(String peerMemberId) async {
     final data = await _api.get('/messages/thread/$peerMemberId');
-    return data is List ? data : [];
+    if (data is List) return data;
+    if (data is Map && data['messages'] is List) {
+      return List<dynamic>.from(data['messages'] as List);
+    }
+    return [];
   }
 
   Future<Map<String, dynamic>> sendMessage(
     String peerMemberId,
     String text,
   ) async {
-    return await _api.post('/messages/thread/$peerMemberId', body: {'text': text})
-        as Map<String, dynamic>;
+    return await _api.post(
+      '/messages/thread/$peerMemberId',
+      body: {'body': text, 'text': text},
+    ) as Map<String, dynamic>;
   }
 }
