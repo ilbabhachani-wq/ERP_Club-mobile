@@ -53,6 +53,7 @@ class OdinUser {
   bool get isScout => role == 'scout';
   bool get isPreparateur => role == 'preparateur';
   bool get isResponsable => role == 'responsable';
+  bool get isCoach => role == 'coach';
   bool get isJoueur =>
       role == 'joueur' ||
       (playerId != null &&
@@ -60,7 +61,9 @@ class OdinUser {
           role != 'analyste' &&
           role != 'scout' &&
           role != 'preparateur' &&
-          role != 'responsable');
+          role != 'responsable' &&
+          role != 'coach' &&
+          role != 'medical');
 
   /// Landing route after login / splash.
   String get homeRoute {
@@ -68,6 +71,7 @@ class OdinUser {
     if (isScout) return '/scout';
     if (isPreparateur) return '/preparateur';
     if (isResponsable) return '/responsable';
+    if (isCoach) return '/coach/entrainements';
     return '/';
   }
 
@@ -80,14 +84,18 @@ class OdinUser {
       'Analyste Performance': 'analyste',
       'Recruteur': 'recruteur',
       'Coach': 'coach',
+      'COACH': 'coach',
       'Médecin': 'medical',
       'Scout': 'scout',
       'Finance': 'finance',
       'Joueur': 'joueur',
     };
     final memberRole = json['clubMemberRole'] as String?;
-    if (memberRole != null && clubMap.containsKey(memberRole)) {
-      return clubMap[memberRole]!;
+    if (memberRole != null) {
+      if (clubMap.containsKey(memberRole)) return clubMap[memberRole]!;
+      final upper = memberRole.toUpperCase();
+      if (upper == 'COACH') return 'coach';
+      if (upper == 'MEDECIN' || upper == 'MÉDECIN') return 'medical';
     }
 
     final backendRole = (json['role'] as String?)?.toUpperCase();

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/app_providers.dart';
+import '../models/player_models.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
@@ -41,6 +42,13 @@ import '../shell/analyste_shell.dart';
 import '../shell/scout_shell.dart';
 import '../shell/preparateur_shell.dart';
 import '../shell/responsable_shell.dart';
+import '../shell/medecin_shell.dart';
+import '../shell/coach_shell.dart';
+import '../screens/coach/coach_entrainements_screen.dart';
+import '../screens/coach/coach_presences_screen.dart';
+import '../screens/coach/coach_composition_screen.dart';
+import '../screens/coach/coach_analyse_match_screen.dart';
+import '../screens/coach/coach_messages_screen.dart';
 import '../screens/scout/scout_dashboard_screen.dart';
 import '../screens/scout/scout_map_screen.dart';
 import '../screens/scout/scout_search_screen.dart';
@@ -69,10 +77,43 @@ import '../screens/responsable/resp_notifications_screen.dart';
 import '../screens/responsable/resp_teams_screen.dart';
 import '../screens/responsable/resp_menu_screen.dart';
 import '../screens/profile/staff_profile_screen.dart';
+import '../screens/medecin/medecin_dossiers_screen.dart';
+import '../screens/medecin/medecin_blessures_screen.dart';
+import '../screens/medecin/medecin_traitements_screen.dart';
+import '../screens/medecin/medecin_rendezvous_screen.dart';
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _playerShellKey = GlobalKey<NavigatorState>(debugLabel: 'playerShell');
 final GlobalKey<NavigatorState> _preparateurShellKey = GlobalKey<NavigatorState>(debugLabel: 'preparateurShell');
 final GlobalKey<NavigatorState> _responsableShellKey = GlobalKey<NavigatorState>(debugLabel: 'responsableShell');
+final GlobalKey<NavigatorState> _medecinShellKey =
+  GlobalKey<NavigatorState>(
+    debugLabel: 'medecinShell'
+  );
+final GlobalKey<NavigatorState> _coachShellKey =
+  GlobalKey<NavigatorState>(
+    debugLabel: 'coachShell'
+  );
+
+bool _isMedecinUser(OdinUser? user) {
+  if (user == null) return false;
+  final role = user.role.toUpperCase();
+  final email = user.email.toLowerCase();
+  return role == 'MEDICAL' ||
+      role == 'MEDECIN' ||
+      role == 'MEDECIN_CLUB' ||
+      role == 'DOCTOR' ||
+      email == 'asmamed@odin.tn';
+}
+
+bool _isCoachUser(OdinUser? user) {
+  if (user == null) return false;
+  final role = user.role.toUpperCase();
+  final email = user.email.toLowerCase();
+  return role == 'COACH' ||
+      role == 'ENTRAINEUR' ||
+      role == 'ENTRAÎNEUR' ||
+      email == 'roccocoach@gmail.com';
+}
 
 CustomTransitionPage<void> _fadeSlidePage({
   required LocalKey key,
@@ -116,6 +157,8 @@ GoRouter createRouter(AuthProvider auth, AuthSessionNotifier sessionNotifier) {
 
       // Connecté → quitter login / onboarding
       if (loc == '/login' || loc == '/onboarding') {
+        if (_isMedecinUser(user)) return '/medecin/dossiers';
+        if (_isCoachUser(user)) return '/coach/entrainements';
         return user?.homeRoute ?? '/';
       }
 
@@ -125,6 +168,8 @@ GoRouter createRouter(AuthProvider auth, AuthSessionNotifier sessionNotifier) {
       final onScout = loc == '/scout' || loc.startsWith('/scout/');
       final onPreparateur = loc == '/preparateur' || loc.startsWith('/preparateur/');
       final onResponsable = loc == '/responsable' || loc.startsWith('/responsable/');
+      final onMedecin = loc == '/medecin' || loc.startsWith('/medecin/');
+      final onCoach = loc == '/coach' || loc.startsWith('/coach/');
 
       if (user.isAnalyste && !onAnalyste) return '/analyste';
       if (!user.isAnalyste && onAnalyste) return user.homeRoute;
@@ -137,6 +182,12 @@ GoRouter createRouter(AuthProvider auth, AuthSessionNotifier sessionNotifier) {
 
       if (user.isResponsable && !onResponsable) return '/responsable';
       if (!user.isResponsable && onResponsable) return user.homeRoute;
+
+      if (_isMedecinUser(user) && !onMedecin) return '/medecin/dossiers';
+      if (!_isMedecinUser(user) && onMedecin) return user.homeRoute;
+
+      if (_isCoachUser(user) && !onCoach) return '/coach/entrainements';
+      if (!_isCoachUser(user) && onCoach) return user.homeRoute;
 
       return null;
     },
@@ -278,6 +329,135 @@ GoRouter createRouter(AuthProvider auth, AuthSessionNotifier sessionNotifier) {
 
       // ── Scout: same flat pattern as analyste
       ..._scoutFlatRoutes(),
+
+      // ── Médecin
+      StatefulShellRoute.indexedStack(
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state, navigationShell) =>
+          MedecinShell(
+            navigationShell: navigationShell
+          ),
+        branches: [
+          StatefulShellBranch(
+            navigatorKey: _medecinShellKey,
+            routes: [
+              GoRoute(
+                path: '/medecin/dossiers',
+                pageBuilder: (context, state) =>
+                  _fadeSlidePage(
+                    key: state.pageKey,
+                    child:
+                      const MedecinDossiersScreen(),
+                  ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/medecin/blessures',
+                pageBuilder: (context, state) =>
+                  _fadeSlidePage(
+                    key: state.pageKey,
+                    child:
+                      const MedecinBlessuresScreen(),
+                  ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/medecin/traitements',
+                pageBuilder: (context, state) =>
+                  _fadeSlidePage(
+                    key: state.pageKey,
+                    child:
+                      const MedecinTraitementsScreen(),
+                  ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/medecin/rendezvous',
+                pageBuilder: (context, state) =>
+                  _fadeSlidePage(
+                    key: state.pageKey,
+                    child:
+                      const MedecinRendezVousScreen(),
+                  ),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // ── Coach
+      StatefulShellRoute.indexedStack(
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state, navigationShell) =>
+          CoachShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            navigatorKey: _coachShellKey,
+            routes: [
+              GoRoute(
+                path: '/coach/entrainements',
+                pageBuilder: (context, state) => _fadeSlidePage(
+                  key: state.pageKey,
+                  child: const CoachEntrainementsScreen(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/coach/presences',
+                pageBuilder: (context, state) => _fadeSlidePage(
+                  key: state.pageKey,
+                  child: const CoachPresencesScreen(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/coach/composition',
+                pageBuilder: (context, state) => _fadeSlidePage(
+                  key: state.pageKey,
+                  child: const CoachCompositionScreen(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/coach/analyse-match',
+                pageBuilder: (context, state) => _fadeSlidePage(
+                  key: state.pageKey,
+                  child: const CoachAnalyseMatchScreen(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/coach/messages',
+                pageBuilder: (context, state) => _fadeSlidePage(
+                  key: state.pageKey,
+                  child: const CoachMessagesScreen(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
 
       // ── Préparateur Physique
       ShellRoute(
