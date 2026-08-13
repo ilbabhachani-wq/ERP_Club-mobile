@@ -10,6 +10,8 @@ import '../../core/widgets/odin_logo.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/analyste_provider.dart';
 import '../../providers/avatar_provider.dart';
+import '../../providers/coach_provider.dart';
+import '../../providers/medecin_provider.dart';
 import '../../providers/preparateur_provider.dart';
 import '../../providers/responsable_provider.dart';
 import '../../providers/scout_provider.dart';
@@ -69,6 +71,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           await context.read<ResponsableDataProvider>().load(
                 orgId: user.organization?.id,
               );
+        } else if (user.isCoach) {
+          await context.read<CoachProvider>().loadAll();
+        } else if (user.isMedecin) {
+          await context.read<MedecinProvider>().loadAll();
         } else {
           await context.read<JoueurDataProvider>().load(user);
           await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
@@ -97,6 +103,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
     return Scaffold(
       backgroundColor: OdinColors.canvas,
       body: Stack(
@@ -141,7 +148,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     .slideY(begin: 0.28, end: 0, curve: Curves.easeOutCubic),
                 const SizedBox(height: 8),
                 Text(
-                  'Espace Joueur · SaaS Pro',
+                  auth.isAuthenticated && auth.user != null
+                      ? '${auth.user!.spaceLabel} · ODIN'
+                      : 'Club OS · ODIN ERP',
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,

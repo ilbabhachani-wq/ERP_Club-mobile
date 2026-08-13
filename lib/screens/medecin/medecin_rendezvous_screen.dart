@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../providers/medecin_provider.dart';
-import '../../models/medecin_models.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/theme/odin_colors.dart';
+import '../../core/widgets/odin_form_sheet.dart';
+import '../../core/widgets/odin_widgets.dart';
+import '../../core/widgets/scout_widgets.dart';
+import '../../models/medecin_models.dart';
+import '../../providers/medecin_provider.dart';
 
 class MedecinRendezVousScreen extends StatefulWidget {
   const MedecinRendezVousScreen({super.key});
@@ -120,32 +124,13 @@ class _MedecinRendezVousScreenState
     final upcomingCount = medicalEvents
       .where((e) => _isFuture(e) && !_isToday(e))
       .length;
+    final pastCount = medicalEvents.where(_isPast).length;
 
-    return Scaffold(
-      backgroundColor: OdinColors.canvas,
-      appBar: AppBar(
-        backgroundColor: OdinColors.canvas2,
-        elevation: 0,
-        title: Text(
-          'Rendez-vous',
-          style: TextStyle(
-            color: OdinColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () =>
-              _showAddEventSheet(context, prov),
-            icon: const Icon(
-              Icons.add,
-              color: Color(0xFFFF7A00),
-            ),
-          ),
-        ],
-      ),
-      body: prov.loading
+    return OdinBackdrop(
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: prov.loading
         ? const _LoadingWidget()
         : prov.error != null
         ? _ErrorWidget(
@@ -158,29 +143,46 @@ class _MedecinRendezVousScreenState
               // KPIs
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.page, 8, AppSpacing.page, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _KpiCard(
-                        label: "Aujourd'hui",
-                        value: '$todayCount',
-                        color: const Color(0xFFFF7A00),
-                        icon: Icons.today,
+                      const ScoutSectionLabel('Rendez-vous'),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          _KpiCard(
+                            label: "Aujourd'hui",
+                            value: '$todayCount',
+                            color: OdinColors.accent,
+                            icon: Icons.today_rounded,
+                          ),
+                          const SizedBox(width: 10),
+                          _KpiCard(
+                            label: 'À venir',
+                            value: '$upcomingCount',
+                            color: AppColors.info,
+                            icon: Icons.upcoming_rounded,
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      _KpiCard(
-                        label: 'À venir',
-                        value: '$upcomingCount',
-                        color: const Color(0xFF3B82F6),
-                        icon: Icons.upcoming,
-                      ),
-                      const SizedBox(width: 8),
-                      _KpiCard(
-                        label: 'Total',
-                        value:
-                          '${medicalEvents.length}',
-                        color: const Color(0xFF8B5CF6),
-                        icon: Icons.calendar_month,
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          _KpiCard(
+                            label: 'Passés',
+                            value: '$pastCount',
+                            color: AppColors.muted,
+                            icon: Icons.history_rounded,
+                          ),
+                          const SizedBox(width: 10),
+                          _KpiCard(
+                            label: 'Total',
+                            value: '${medicalEvents.length}',
+                            color: const Color(0xFF8B5CF6),
+                            icon: Icons.calendar_month_rounded,
+                          ),
+                        ],
                       ),
                     ],
                   ).animate().fadeIn(),
@@ -193,10 +195,7 @@ class _MedecinRendezVousScreenState
                   height: 40,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    padding:
-                      const EdgeInsets.symmetric(
-                        horizontal: 12
-                      ),
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.page, 12, AppSpacing.page, 0),
                     itemCount: _filters.length,
                     separatorBuilder: (_, _) =>
                       const SizedBox(width: 8),
@@ -215,21 +214,22 @@ class _MedecinRendezVousScreenState
                             ),
                           decoration: BoxDecoration(
                             color: active
-                              ? const Color(
-                                  0xFFFF7A00
-                                )
-                              : OdinColors.panelBorder.withValues(alpha: 0.5),
+                              ? OdinColors.accent
+                              : OdinColors.inputFill,
                             borderRadius:
-                              BorderRadius.circular(
-                                99
-                              ),
+                              BorderRadius.circular(99),
+                            border: Border.all(
+                              color: active
+                                ? OdinColors.accent
+                                : OdinColors.panelBorder,
+                            ),
                           ),
                           child: Text(
                             f,
                             style: TextStyle(
                               color: active
-                                ? OdinColors.textPrimary
-                                : OdinColors.textSecondary.withValues(alpha: 0.7),
+                                ? Colors.white
+                                : OdinColors.textSecondary,
                               fontSize: 12,
                               fontWeight: active
                                 ? FontWeight.w700
@@ -287,28 +287,18 @@ class _MedecinRendezVousScreenState
                                 ),
                               decoration:
                                 BoxDecoration(
-                                color: const Color(
-                                  0xFFFF7A00
-                                ).withValues(
-                                  alpha: 0.12
-                                ),
+                                color: OdinColors.accent.withValues(alpha: 0.12),
                                 borderRadius:
                                   BorderRadius
                                     .circular(99),
                                 border: Border.all(
-                                  color: const Color(
-                                    0xFFFF7A00
-                                  ).withValues(
-                                    alpha: 0.30
-                                  ),
+                                  color: OdinColors.accent.withValues(alpha: 0.30),
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 '+ Ajouter un RDV',
                                 style: TextStyle(
-                                  color: Color(
-                                    0xFFFF7A00
-                                  ),
+                                  color: OdinColors.accent,
                                   fontSize: 12,
                                   fontWeight:
                                     FontWeight.w600,
@@ -330,7 +320,7 @@ class _MedecinRendezVousScreenState
                         return Padding(
                           padding:
                             const EdgeInsets.fromLTRB(
-                              12, 0, 12, 6
+                              AppSpacing.page, 0, AppSpacing.page, 8
                             ),
                           child: _EventCard(
                             event: e,
@@ -354,168 +344,116 @@ class _MedecinRendezVousScreenState
                   ),
 
               const SliverToBoxAdapter(
-                child: SizedBox(height: 32)
+                child: SizedBox(height: AppSpacing.bottomNav)
               ),
             ],
           ),
+          ),
+          Positioned(
+            right: 16,
+            bottom: AppSpacing.fabBottom(context),
+            child: FloatingActionButton(
+              backgroundColor: OdinColors.accent,
+              onPressed: () => _showAddEventSheet(context, prov),
+              child: const Icon(Icons.add_rounded, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  void _showAddEventSheet(
+  Future<void> _showAddEventSheet(
     BuildContext context,
     MedecinProvider prov,
-  ) {
+  ) async {
     final titleCtrl = TextEditingController();
     final dateCtrl = TextEditingController();
     final timeCtrl = TextEditingController();
     final locationCtrl = TextEditingController();
 
-    showGeneralDialog(
-      context: context,
-      useRootNavigator: true,
-      barrierDismissible: true,
-      barrierLabel: 'Fermer',
-      barrierColor: Colors.black.withValues(alpha: 0.70),
-      transitionDuration: const Duration(milliseconds: 180),
-      pageBuilder: (ctx, anim, secondaryAnim) {
-        final maxH = MediaQuery.of(ctx).size.height * 0.85;
-        return SizedBox.expand(
-          child: Material(
-            type: MaterialType.transparency,
-            child: SafeArea(
-              child: Center(
-                child: Container(
-                  width: 400,
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(ctx).size.width - 40,
-                    maxHeight: maxH,
+    try {
+      await showOdinFormSheet<void>(
+        context: context,
+        title: 'Nouveau rendez-vous',
+        builder: (ctx) => Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _SheetField(
+              label: 'TITRE',
+              controller: titleCtrl,
+              hint: 'Ex: Consultation, IRM...',
+            ),
+            const SizedBox(height: 14),
+            _SheetField(
+              label: 'DATE (JJ/MM/AAAA)',
+              controller: dateCtrl,
+              hint: 'Ex: 20/07/2026',
+              keyboardType: TextInputType.datetime,
+            ),
+            const SizedBox(height: 14),
+            _SheetField(
+              label: 'HEURE',
+              controller: timeCtrl,
+              hint: 'Ex: 09:00',
+              keyboardType: TextInputType.datetime,
+            ),
+            const SizedBox(height: 14),
+            _SheetField(
+              label: 'LIEU',
+              controller: locationCtrl,
+              hint: 'Ex: Cabinet médical...',
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (titleCtrl.text.isEmpty || dateCtrl.text.isEmpty) return;
+                  Navigator.of(ctx).pop();
+                  final payload = {
+                    'title': titleCtrl.text.trim(),
+                    'eventDate': dateCtrl.text.trim(),
+                    'eventTime': timeCtrl.text.trim(),
+                    'location': locationCtrl.text.trim(),
+                    'eventType': 'MEDICAL',
+                  };
+                  try {
+                    await prov.addEvent(payload);
+                  } catch (e) {
+                    if (e.toString().contains('403') ||
+                        e.toString().contains('Permission')) {
+                      prov.addLocalEvent({
+                        'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                        ...payload,
+                      });
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: OdinColors.accent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    top: 16,
-                    bottom: 16 + MediaQuery.of(ctx).viewInsets.bottom,
-                  ),
-                  decoration: BoxDecoration(
-                    color: OdinColors.canvas2,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: OdinColors.panelBorder,
-                    ),
-                  ),
-                  child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Nouveau rendez-vous',
-                              style: TextStyle(
-                                color: OdinColors.textPrimary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () =>
-                                Navigator.of(ctx, rootNavigator: true).pop(),
-                            icon: Icon(
-                              Icons.close,
-                              color: OdinColors.textMuted,
-                              size: 20,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      _SheetField(
-                        label: 'TITRE',
-                        controller: titleCtrl,
-                        hint: 'Ex: Consultation, IRM...',
-                      ),
-                      const SizedBox(height: 14),
-                      _SheetField(
-                        label: 'DATE (JJ/MM/AAAA)',
-                        controller: dateCtrl,
-                        hint: 'Ex: 20/07/2026',
-                        keyboardType: TextInputType.datetime,
-                      ),
-                      const SizedBox(height: 14),
-                      _SheetField(
-                        label: 'HEURE',
-                        controller: timeCtrl,
-                        hint: 'Ex: 09:00',
-                        keyboardType: TextInputType.datetime,
-                      ),
-                      const SizedBox(height: 14),
-                      _SheetField(
-                        label: 'LIEU',
-                        controller: locationCtrl,
-                        hint: 'Ex: Cabinet médical...',
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            if (titleCtrl.text.isEmpty ||
-                                dateCtrl.text.isEmpty) {
-                              return;
-                            }
-                            Navigator.of(ctx, rootNavigator: true).pop();
-                            final payload = {
-                              'title': titleCtrl.text.trim(),
-                              'eventDate': dateCtrl.text.trim(),
-                              'eventTime': timeCtrl.text.trim(),
-                              'location': locationCtrl.text.trim(),
-                              'eventType': 'MEDICAL',
-                            };
-                            try {
-                              await prov.addEvent(payload);
-                            } catch (e) {
-                              if (e.toString().contains('403') ||
-                                  e.toString().contains('Permission')) {
-                                prov.addLocalEvent({
-                                  'id': DateTime.now()
-                                      .millisecondsSinceEpoch
-                                      .toString(),
-                                  ...payload,
-                                });
-                              }
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF7A00),
-                            foregroundColor: OdinColors.textPrimary,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: const Text(
-                            'Créer le rendez-vous',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                ),
+                child: const Text(
+                  'Créer le rendez-vous',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       );
-      },
-    );
+    } finally {
+      titleCtrl.dispose();
+      dateCtrl.dispose();
+      timeCtrl.dispose();
+      locationCtrl.dispose();
+    }
   }
 }
 
@@ -537,10 +475,10 @@ class _EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color c = isToday
-        ? const Color(0xFFFF7A00)
+        ? OdinColors.accent
         : isPast
-            ? const Color(0xFF6B7280)
-            : const Color(0xFF3B82F6);
+            ? OdinColors.textMuted
+            : AppColors.info;
 
     final subtitleParts = <String>[
       if (event.eventTime.isNotEmpty) event.eventTime,
@@ -556,30 +494,16 @@ class _EventCard extends StatelessWidget {
             ? 'Passé'
             : null;
 
-    return SizedBox(
-      height: 56,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10, vertical: 8,
-          ),
-          decoration: BoxDecoration(
-            color: c.withValues(alpha: 0.06),
-            border: Border(
-              left: BorderSide(color: c, width: 3),
-              top: BorderSide(color: c.withValues(alpha: 0.15)),
-              right: BorderSide(color: c.withValues(alpha: 0.15)),
-              bottom: BorderSide(color: c.withValues(alpha: 0.15)),
-            ),
-          ),
-          child: Row(
+    return GlassCard(
+      accentColor: c,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Row(
             children: [
               Container(
-                width: 36, height: 36,
+                width: 44, height: 44,
                 decoration: BoxDecoration(
-                  color: c.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  color: c.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 alignment: Alignment.center,
                 child: Column(
@@ -655,8 +579,6 @@ class _EventCard extends StatelessWidget {
                 ),
             ],
           ),
-        ),
-      ),
     );
   }
 }
@@ -676,53 +598,51 @@ class _KpiCard extends StatelessWidget {
   final IconData icon;
 
   @override
-  Widget build(BuildContext context) =>
-    Expanded(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          border: Border(
-            left: BorderSide(color: color, width: 3),
-            top: BorderSide(
-              color: color.withValues(alpha: 0.20)
-            ),
-            right: BorderSide(
-              color: color.withValues(alpha: 0.20)
-            ),
-            bottom: BorderSide(
-              color: color.withValues(alpha: 0.20)
+  Widget build(BuildContext context) => Expanded(
+        child: SizedBox(
+          height: 112,
+          child: GlassCard(
+            raised: true,
+            accentColor: color,
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: color, size: 18),
+                ),
+                const Spacer(),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: AppColors.text,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.muted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 14),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                color: color,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: OdinColors.textSecondary.withValues(alpha: 0.7),
-                fontSize: 8,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-      ),
-    );
+      );
 }
 
 class _SheetField extends StatelessWidget {
@@ -791,7 +711,7 @@ class _LoadingWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           CircularProgressIndicator(
-            color: Color(0xFFFF7A00), strokeWidth: 2
+            color: OdinColors.accent, strokeWidth: 2
           ),
           SizedBox(height: 12),
           Text(
@@ -837,7 +757,7 @@ class _ErrorWidget extends StatelessWidget {
             child: const Text(
               'Réessayer',
               style: TextStyle(
-                color: Color(0xFFFF7A00)
+                color: OdinColors.accent
               ),
             ),
           ),

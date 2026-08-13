@@ -3,10 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/coach_models.dart';
 import '../services/coach_api.dart';
+import '../services/responsable_api.dart';
 
 class CoachProvider extends ChangeNotifier {
   CoachProvider(this._api);
   final CoachApi _api;
+
+  CoachApi get api => _api;
 
   static const _kAttendance = 'odin_attendance';
   static const _kMatchAnalysis = 'odin_match_analysis_v2';
@@ -21,10 +24,16 @@ class CoachProvider extends ChangeNotifier {
   List<Map<String, dynamic>> attendanceHistory = [];
   Map<String, dynamic>? trainingSummary;
   Map<String, dynamic>? savedLineup;
+  List<ClubNotificationItem> notifications = [];
   bool loading = false;
+  bool bootstrapped = false;
   String? error;
 
-  Future<void> loadAll() async {
+  int get unreadNotifications => notifications.where((n) => !n.read).length;
+
+  Future<void> loadAll({bool force = false}) async {
+    if (loading) return;
+    if (bootstrapped && !force) return;
     loading = true;
     error = null;
     notifyListeners();
@@ -37,13 +46,67 @@ class CoachProvider extends ChangeNotifier {
         _loadInjuries(),
         _loadCharge(),
         _loadLocal(),
+        _loadNotifications(),
       ]);
     } catch (e) {
       error = e.toString();
     } finally {
+      bootstrapped = true;
       loading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> _loadNotifications() async {
+    try {
+      notifications = await _api.getNotifications();
+    } catch (_) {
+      notifications = notifications;
+    }
+  }
+
+  Future<void> refreshNotifications() async {
+    await _loadNotifications();
+    notifyListeners();
+  }
+
+  Future<void> markAllRead() async {
+    final ids = notifications.where((n) => !n.read).map((n) => n.id).toList();
+    if (ids.isEmpty) return;
+    await _api.markNotificationsRead(ids);
+    notifications = notifications
+        .map((n) => ClubNotificationItem(
+              id: n.id,
+              title: n.title,
+              body: n.body,
+              type: n.type,
+              date: n.date,
+              read: true,
+              path: n.path,
+              level: n.level,
+            ))
+        .toList();
+    notifyListeners();
+  }
+
+  Future<void> markRead(List<String> ids) async {
+    if (ids.isEmpty) return;
+    await _api.markNotificationsRead(ids);
+    notifications = notifications
+        .map((n) => ids.contains(n.id)
+            ? ClubNotificationItem(
+                id: n.id,
+                title: n.title,
+                body: n.body,
+                type: n.type,
+                date: n.date,
+                read: true,
+                path: n.path,
+                level: n.level,
+              )
+            : n)
+        .toList();
+    notifyListeners();
   }
 
   Future<void> _loadPlayers() async {

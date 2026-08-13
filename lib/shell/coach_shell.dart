@@ -1,174 +1,134 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../core/theme/odin_colors.dart';
-import '../core/widgets/odin_settings_sheet.dart';
-import '../providers/theme_provider.dart';
 import 'package:provider/provider.dart';
+import '../core/theme/odin_colors.dart';
+import '../core/widgets/odin_notifications.dart';
+import '../core/widgets/odin_settings_sheet.dart';
+import '../core/widgets/odin_widgets.dart';
+import '../providers/app_providers.dart';
+import '../providers/coach_provider.dart';
+import '../providers/theme_provider.dart';
+import '../router/app_router.dart';
 
 class CoachShell extends StatelessWidget {
-  const CoachShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const CoachShell({super.key, required this.child});
 
-  final StatefulNavigationShell navigationShell;
-
-  static const _tabs = [
-    _TabItem(
-      icon: Icons.fitness_center_outlined,
-      activeIcon: Icons.fitness_center,
-      label: 'Séances',
-      path: '/coach/entrainements',
-    ),
-    _TabItem(
-      icon: Icons.how_to_reg_outlined,
-      activeIcon: Icons.how_to_reg,
-      label: 'Présences',
-      path: '/coach/presences',
-    ),
-    _TabItem(
-      icon: Icons.sports_soccer_outlined,
-      activeIcon: Icons.sports_soccer,
-      label: 'Compo',
-      path: '/coach/composition',
-    ),
-    _TabItem(
-      icon: Icons.analytics_outlined,
-      activeIcon: Icons.analytics,
-      label: 'Analyse',
-      path: '/coach/analyse-match',
-    ),
-    _TabItem(
-      icon: Icons.chat_bubble_outline,
-      activeIcon: Icons.chat_bubble,
-      label: 'Messages',
-      path: '/coach/messages',
-    ),
-  ];
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
+    context.watch<LocaleProvider>();
+
+    final location = GoRouterState.of(context).uri.path;
+    final index = coachShellIndexForLocation(location);
+    final auth = context.watch<AuthProvider>();
+    final data = context.watch<CoachProvider>();
+    final club = auth.user?.organization?.clubName ?? 'Espace Coach';
+    const accent = OdinColors.accent;
+
+    if (auth.isAuthenticated && !data.bootstrapped && !data.loading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) context.read<CoachProvider>().loadAll();
+      });
+    }
+
     return Scaffold(
+      extendBody: true,
       backgroundColor: OdinColors.canvas,
-      body: navigationShell,
-      floatingActionButton: FloatingActionButton.small(
-        backgroundColor: OdinColors.canvas2,
-        onPressed: () => showOdinSettingsSheet(
-          context,
-          roleLabel: 'Espace Coach',
-        ),
-        child: Icon(
-          Icons.settings_outlined,
-          color: OdinColors.textMuted,
-          size: 18,
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
-      bottomNavigationBar: _OdinBottomNav(
-        currentIndex: navigationShell.currentIndex,
-        onTap: (i) => navigationShell.goBranch(
-          i,
-          initialLocation: i == navigationShell.currentIndex,
-        ),
-        tabs: _tabs,
-      ),
-    );
-  }
-}
-
-class _TabItem {
-  const _TabItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.path,
-  });
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final String path;
-}
-
-class _OdinBottomNav extends StatelessWidget {
-  const _OdinBottomNav({
-    required this.currentIndex,
-    required this.onTap,
-    required this.tabs,
-  });
-
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-  final List<_TabItem> tabs;
-
-  @override
-  Widget build(BuildContext context) {
-    context.watch<ThemeProvider>();
-    return Container(
-      decoration: BoxDecoration(
-        color: OdinColors.canvas2,
-        border: Border(
-          top: BorderSide(
-            color: OdinColors.panelBorder,
-            width: 0.5,
-          ),
-        ),
-      ),
-      child: SafeArea(
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            children: List.generate(tabs.length, (i) {
-              final tab = tabs[i];
-              final isActive = currentIndex == i;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => onTap(i),
-                  behavior: HitTestBehavior.opaque,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? OdinColors.accent.withValues(alpha: 0.15)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Icon(
-                          isActive ? tab.activeIcon : tab.icon,
-                          size: 20,
-                          color: isActive
-                              ? OdinColors.accent
-                              : OdinColors.textMuted.withValues(alpha: 0.7),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        tab.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight:
-                              isActive ? FontWeight.w700 : FontWeight.w400,
-                          color: isActive
-                              ? OdinColors.accent
-                              : OdinColors.textMuted.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+      appBar: OdinProAppBar(
+        club: club,
+        subtitle: 'Espace Coach · ODIN',
+        accentColor: accent,
+        showLogo: true,
+        logoSize: 58,
+        actions: [
+          OdinNotificationBell(
+            unreadCount: data.unreadNotifications,
+            color: OdinColors.textSecondary,
+            onPressed: () {
+              final items = data.notifications
+                  .map(
+                    (n) => OdinNotifItem(
+                      id: n.id,
+                      title: n.title,
+                      body: n.body,
+                      time: n.date,
+                      unread: !n.read,
+                      type: n.type,
+                      color: accent,
+                    ),
+                  )
+                  .toList();
+              showOdinNotificationsSheet(
+                context,
+                items: items,
+                seeAllRoute: '/coach/notifications',
+                onMarkAllRead: () => data.markAllRead(),
+                onTapItem: (item) {
+                  if (item.unread) data.markRead([item.id]);
+                },
               );
-            }),
+            },
           ),
-        ),
+          const OdinSettingsButton(
+            roleLabel: 'Espace Coach',
+            links: [
+              OdinSettingsLink(
+                label: 'Mon profil',
+                subtitle: 'Photo, sécurité',
+                route: '/coach/profil',
+                icon: Icons.person_outline_rounded,
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: KeyedSubtree(
+        key: ValueKey(location),
+        child: child,
+      ),
+      bottomNavigationBar: OdinGlassNavBar(
+        selectedIndex: index,
+        onSelected: (i) => goToCoachShellTab(context, i),
+        accentColor: accent,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded),
+            label: 'Accueil',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.fitness_center_outlined),
+            selectedIcon: Icon(Icons.fitness_center_rounded),
+            label: 'Séances',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.how_to_reg_outlined),
+            selectedIcon: Icon(Icons.how_to_reg_rounded),
+            label: 'Présences',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.sports_soccer_outlined),
+            selectedIcon: Icon(Icons.sports_soccer),
+            label: 'Compo',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.analytics_outlined),
+            selectedIcon: Icon(Icons.analytics_rounded),
+            label: 'Analyse',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.auto_awesome_outlined),
+            selectedIcon: Icon(Icons.auto_awesome_rounded),
+            label: 'IA',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.chat_bubble_outline_rounded),
+            selectedIcon: Icon(Icons.chat_bubble_rounded),
+            label: 'Messages',
+          ),
+        ],
       ),
     );
   }

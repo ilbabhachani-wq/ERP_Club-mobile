@@ -3,7 +3,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../models/coach_models.dart';
 import '../../providers/coach_provider.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/theme/odin_colors.dart';
+import '../../core/widgets/odin_form_sheet.dart';
+import '../../core/widgets/odin_widgets.dart';
+import '../../core/widgets/scout_widgets.dart';
 import '../../providers/theme_provider.dart';
 
 /// Option A — Coach today + slim KPI strip
@@ -46,73 +50,18 @@ class _CoachEntrainementsScreenState extends State<CoachEntrainementsScreen>
     String type = 'Tactique';
     String intensity = 'Modérée';
 
-    await showGeneralDialog(
-      context: context,
-      useRootNavigator: true,
-      barrierDismissible: true,
-      barrierLabel: 'Fermer',
-      barrierColor: Colors.black.withValues(alpha: 0.70),
-      transitionDuration: const Duration(milliseconds: 180),
-      pageBuilder: (ctx, a1, a2) {
-        final prov = context.read<CoachProvider>();
-        return SizedBox.expand(
-          child: Material(
-            type: MaterialType.transparency,
-            child: SafeArea(
-              child: Center(
-                child: StatefulBuilder(
-                  builder: (ctx, setSheet) {
-                    return Container(
-                      width: 400,
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(ctx).size.width - 32,
-                        maxHeight: MediaQuery.of(ctx).size.height * 0.88,
-                      ),
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      padding: EdgeInsets.only(
-                        left: 18,
-                        right: 18,
-                        top: 14,
-                        bottom: 14 + MediaQuery.of(ctx).viewInsets.bottom,
-                      ),
-                      decoration: BoxDecoration(
-                        color: OdinColors.canvas2,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: OdinColors.panelBorder,
-                        ),
-                      ),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Créer une séance',
-                                    style: TextStyle(
-                                      color: OdinColors.textPrimary,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () => Navigator.of(
-                                    ctx,
-                                    rootNavigator: true,
-                                  ).pop(),
-                                  icon: Icon(
-                                    Icons.close,
-                                    color: OdinColors.textMuted,
-                                    size: 20,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
+    try {
+      await showOdinFormSheet<void>(
+        context: context,
+        title: 'Créer une séance',
+        builder: (ctx) {
+          final prov = context.read<CoachProvider>();
+          return StatefulBuilder(
+            builder: (ctx, setSheet) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                             Text(
                               'TYPE',
                               style: TextStyle(
@@ -241,15 +190,11 @@ class _CoachEntrainementsScreenState extends State<CoachEntrainementsScreen>
                               children: [
                                 Expanded(
                                   child: OutlinedButton(
-                                    onPressed: () => Navigator.of(
-                                      ctx,
-                                      rootNavigator: true,
-                                    ).pop(),
+                                    onPressed: () => Navigator.of(ctx).pop(),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: OdinColors.textSecondary,
                                       side: BorderSide(
-                                        color:
-                                            OdinColors.panelBorder.withValues(alpha: 1.5),
+                                        color: OdinColors.panelBorder,
                                       ),
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 14,
@@ -278,15 +223,17 @@ class _CoachEntrainementsScreenState extends State<CoachEntrainementsScreen>
                                             'Intensité: $intensity. Durée: ${durationCtrl.text.trim()} min. ${notesCtrl.text.trim()}',
                                       );
                                       if (ctx.mounted) {
-                                        Navigator.of(ctx, rootNavigator: true)
-                                            .pop();
+                                        Navigator.of(ctx).pop();
                                       }
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: OdinColors.accent,
-                                      foregroundColor: OdinColors.textPrimary,
+                                      foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 14,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
                                       ),
                                     ),
                                     child: const Text(
@@ -299,70 +246,39 @@ class _CoachEntrainementsScreenState extends State<CoachEntrainementsScreen>
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
+                ],
+              );
+            },
+          );
+        },
+      );
+    } finally {
+      objectiveCtrl.dispose();
+      dateCtrl.dispose();
+      timeCtrl.dispose();
+      durationCtrl.dispose();
+      locationCtrl.dispose();
+      notesCtrl.dispose();
+    }
   }
 
   void _openDetail(CoachSession s) {
-    showModalBottomSheet(
+    final dispo = context.read<CoachProvider>().disponibles.length;
+    showOdinFormSheet<void>(
       context: context,
-      backgroundColor: OdinColors.canvas2,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      title: s.title,
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _kv('Date', s.dateKey),
+          _kv('Heure', s.eventTime.isEmpty ? '—' : s.eventTime),
+          _kv('Lieu', s.location.isEmpty ? '—' : s.location),
+          _kv('Type', s.eventType),
+          if (s.notes != null && s.notes!.isNotEmpty) _kv('Description', s.notes!),
+          _kv('Joueurs attendus', '$dispo disponibles'),
+        ],
       ),
-      builder: (ctx) {
-        final dispo = context.read<CoachProvider>().disponibles.length;
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: OdinColors.textMuted.withValues(alpha: 0.35),
-                      borderRadius: BorderRadius.circular(99),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  s.title,
-                  style: TextStyle(
-                    color: OdinColors.textPrimary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _kv('Date', s.dateKey),
-                _kv('Heure', s.eventTime.isEmpty ? '—' : s.eventTime),
-                _kv('Lieu', s.location.isEmpty ? '—' : s.location),
-                _kv('Type', s.eventType),
-                if (s.notes != null && s.notes!.isNotEmpty)
-                  _kv('Description', s.notes!),
-                _kv('Joueurs attendus', '$dispo disponibles'),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -375,26 +291,16 @@ class _CoachEntrainementsScreenState extends State<CoachEntrainementsScreen>
     final done = prov.doneTrainings;
     final days = prov.daysToNextMatch;
 
-    return Scaffold(
-      backgroundColor: OdinColors.canvas,
-      appBar: AppBar(
-        backgroundColor: OdinColors.canvas2,
-        elevation: 0,
-        title: Text(
-          'Séances',
-          style: TextStyle(
-            color: OdinColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
+    return OdinBackdrop(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: AppSpacing.fabLift(context)),
+        child: FloatingActionButton.small(
+          backgroundColor: OdinColors.accent,
+          onPressed: _showCreateSession,
+          child: const Icon(Icons.add_rounded, color: Colors.white),
         ),
-        actions: [
-          IconButton(
-            onPressed: _showCreateSession,
-            icon: const Icon(Icons.add_circle, color: OdinColors.accent, size: 28),
-          ),
-          const SizedBox(width: 4),
-        ],
       ),
       body: prov.loading
           ? const Center(
@@ -402,7 +308,7 @@ class _CoachEntrainementsScreenState extends State<CoachEntrainementsScreen>
             )
           : RefreshIndicator(
               color: OdinColors.accent,
-              onRefresh: () => prov.loadAll(),
+              onRefresh: () => prov.loadAll(force: true),
               child: Column(
                 children: [
                   Padding(
@@ -414,6 +320,11 @@ class _CoachEntrainementsScreenState extends State<CoachEntrainementsScreen>
                     ),
                   ),
                   const SizedBox(height: 16),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: ScoutSectionLabel('Indicateurs'),
+                  ),
+                  const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: _SlimKpis(
@@ -473,6 +384,7 @@ class _CoachEntrainementsScreenState extends State<CoachEntrainementsScreen>
                 ],
               ),
             ),
+    ),
     );
   }
 
@@ -553,33 +465,12 @@ class _TodayHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: session == null ? onPlan : onOpen,
-        borderRadius: BorderRadius.circular(16),
-        child: Ink(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              colors: session == null
-                  ? [
-                      OdinColors.inputFill,
-                      OdinColors.glassPanel.withValues(alpha: 0.5),
-                    ]
-                  : [
-                      OdinColors.accent.withValues(alpha: 0.22),
-                      OdinColors.accent.withValues(alpha: 0.06),
-                    ],
-            ),
-            border: Border.all(
-              color: session == null
-                  ? OdinColors.panelBorder
-                  : OdinColors.accent.withValues(alpha: 0.35),
-            ),
-          ),
-          child: session == null
+    return GlassCard(
+      raised: true,
+      accentColor: session == null ? OdinColors.panelBorder : OdinColors.accent,
+      onTap: session == null ? onPlan : onOpen,
+      padding: const EdgeInsets.all(18),
+      child: session == null
               ? Row(
                   children: [
                     Container(
@@ -682,8 +573,6 @@ class _TodayHero extends StatelessWidget {
                     ),
                   ],
                 ),
-        ),
-      ),
     );
   }
 }
@@ -703,56 +592,63 @@ class _SlimKpis extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
-    return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: OdinColors.inputFill,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-      ),
-      child: Row(
-        children: [
-          _cell('Semaine', week, OdinColors.accent),
-          _div(),
-          _cell('Faites', done, const Color(0xFF22C55E)),
-          _div(),
-          _cell('Dispo', dispo, const Color(0xFF3B82F6)),
-          _div(),
-          _cell('Match', match, const Color(0xFF8B5CF6)),
-        ],
-      ),
+    final tiles = [
+      ('Semaine', week, OdinColors.accent, Icons.calendar_view_week_rounded),
+      ('Faites', done, const Color(0xFF22C55E), Icons.check_circle_outline_rounded),
+      ('Dispo', dispo, const Color(0xFF3B82F6), Icons.groups_rounded),
+      ('Match', match, const Color(0xFF8B5CF6), Icons.sports_soccer_rounded),
+    ];
+    Widget tile((String, String, Color, IconData) t) => Expanded(
+          child: SizedBox(
+            height: 112,
+            child: GlassCard(
+              raised: true,
+              accentColor: t.$3,
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: t.$3.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(t.$4, color: t.$3, size: 18),
+                  ),
+                  const Spacer(),
+                  Text(
+                    t.$2,
+                    style: TextStyle(
+                      color: AppColors.text,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 22,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    t.$1,
+                    style: TextStyle(
+                      color: AppColors.muted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+    return Column(
+      children: [
+        Row(children: [tile(tiles[0]), const SizedBox(width: 10), tile(tiles[1])]),
+        const SizedBox(height: 10),
+        Row(children: [tile(tiles[2]), const SizedBox(width: 10), tile(tiles[3])]),
+      ],
     );
   }
-
-  Widget _div() => Container(
-        width: 1,
-        height: 28,
-        color: OdinColors.panelBorder,
-      );
-
-  Widget _cell(String l, String v, Color c) => Expanded(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              v,
-              style: TextStyle(
-                color: c,
-                fontWeight: FontWeight.w800,
-                fontSize: 16,
-              ),
-            ),
-            Text(
-              l,
-              style: TextStyle(
-                color: OdinColors.textMuted,
-                fontSize: 9,
-              ),
-            ),
-          ],
-        ),
-      );
 }
 
 class _SessionList extends StatelessWidget {
@@ -798,27 +694,16 @@ class _SessionList extends StatelessWidget {
       );
     }
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, AppSpacing.bottomNav),
       itemCount: sessions.length,
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, i) {
         final s = sessions[i];
-        return GestureDetector(
+        return GlassCard(
           onTap: () => onTap(s),
-          child: Container(
-            height: 64,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: OdinColors.glassPanel,
-              borderRadius: BorderRadius.circular(14),
-              border: Border(
-                left: BorderSide(color: accent, width: 3),
-                top: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-                right: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-                bottom: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-              ),
-            ),
-            child: Row(
+          accentColor: accent,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
               children: [
                 Expanded(
                   child: Column(
@@ -857,7 +742,6 @@ class _SessionList extends StatelessWidget {
                   color: OdinColors.textMuted.withValues(alpha: 0.4),
                 ),
               ],
-            ),
           ),
         ).animate().fadeIn(delay: Duration(milliseconds: i * 40));
       },

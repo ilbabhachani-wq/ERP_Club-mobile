@@ -15,6 +15,7 @@ Future<void> showOdinSettingsSheet(
   HapticFeedback.lightImpact();
   await showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     // Transparent so the Consumer can paint a live theme background.
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

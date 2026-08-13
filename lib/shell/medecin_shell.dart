@@ -1,182 +1,129 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../core/theme/odin_colors.dart';
-import '../core/widgets/odin_settings_sheet.dart';
-import '../providers/theme_provider.dart';
 import 'package:provider/provider.dart';
+import '../core/theme/odin_colors.dart';
+import '../core/widgets/odin_notifications.dart';
+import '../core/widgets/odin_settings_sheet.dart';
+import '../core/widgets/odin_widgets.dart';
+import '../providers/app_providers.dart';
+import '../providers/medecin_provider.dart';
+import '../providers/theme_provider.dart';
+import '../router/app_router.dart';
 
 class MedecinShell extends StatelessWidget {
-  const MedecinShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const MedecinShell({super.key, required this.child});
 
-  final StatefulNavigationShell navigationShell;
-
-  static const _tabs = [
-    _TabItem(
-      icon: Icons.folder_shared_outlined,
-      activeIcon: Icons.folder_shared,
-      label: 'Dossiers',
-      path: '/medecin/dossiers',
-    ),
-    _TabItem(
-      icon: Icons.healing_outlined,
-      activeIcon: Icons.healing,
-      label: 'Blessures',
-      path: '/medecin/blessures',
-    ),
-    _TabItem(
-      icon: Icons.medical_services_outlined,
-      activeIcon: Icons.medical_services,
-      label: 'Traitements',
-      path: '/medecin/traitements',
-    ),
-    _TabItem(
-      icon: Icons.calendar_month_outlined,
-      activeIcon: Icons.calendar_month,
-      label: 'Rendez-vous',
-      path: '/medecin/rendezvous',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: OdinColors.canvas,
-      body: navigationShell,
-      floatingActionButton: FloatingActionButton.small(
-        backgroundColor: OdinColors.canvas2,
-        onPressed: () => showOdinSettingsSheet(
-          context,
-          roleLabel: 'Espace Médecin',
-        ),
-        child: Icon(
-          Icons.settings_outlined,
-          color: OdinColors.textMuted,
-          size: 18,
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
-      bottomNavigationBar: _OdinBottomNav(
-        currentIndex: navigationShell.currentIndex,
-        onTap: (i) => navigationShell.goBranch(
-          i,
-          initialLocation:
-            i == navigationShell.currentIndex,
-        ),
-        tabs: _tabs,
-      ),
-    );
-  }
-}
-
-class _TabItem {
-  const _TabItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.path,
-  });
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final String path;
-}
-
-class _OdinBottomNav extends StatelessWidget {
-  const _OdinBottomNav({
-    required this.currentIndex,
-    required this.onTap,
-    required this.tabs,
-  });
-
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-  final List<_TabItem> tabs;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
-    return Container(
-      decoration: BoxDecoration(
-        color: OdinColors.canvas2,
-        border: Border(
-          top: BorderSide(
-            color: OdinColors.panelBorder,
-            width: 0.5,
-          ),
-        ),
-      ),
-      child: SafeArea(
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            children: List.generate(tabs.length, (i) {
-              final tab = tabs[i];
-              final isActive = currentIndex == i;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => onTap(i),
-                  behavior: HitTestBehavior.opaque,
-                  child: AnimatedContainer(
-                    duration:
-                      const Duration(milliseconds: 200),
-                    child: Column(
-                      mainAxisAlignment:
-                        MainAxisAlignment.center,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(
-                            milliseconds: 200
-                          ),
-                          padding:
-                            const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 4,
-                            ),
-                          decoration: BoxDecoration(
-                            color: isActive
-                              ? const Color(0xFFFF7A00)
-                                .withValues(alpha: 0.15)
-                              : Colors.transparent,
-                            borderRadius:
-                              BorderRadius.circular(20),
-                          ),
-                          child: Icon(
-                            isActive
-                              ? tab.activeIcon
-                              : tab.icon,
-                            size: 22,
-                            color: isActive
-                              ? const Color(0xFFFF7A00)
-                              : OdinColors.textMuted.withValues(alpha: 0.7),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        AnimatedDefaultTextStyle(
-                          duration: const Duration(
-                            milliseconds: 200
-                          ),
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: isActive
-                              ? FontWeight.w700
-                              : FontWeight.w400,
-                            color: isActive
-                              ? const Color(0xFFFF7A00)
-                              : OdinColors.textMuted.withValues(alpha: 0.7),
-                          ),
-                          child: Text(tab.label),
-                        ),
-                      ],
+    context.watch<LocaleProvider>();
+
+    final location = GoRouterState.of(context).uri.path;
+    final index = medecinShellIndexForLocation(location);
+    final auth = context.watch<AuthProvider>();
+    final data = context.watch<MedecinProvider>();
+    final club = auth.user?.organization?.clubName ?? 'Espace Médecin';
+    const accent = OdinColors.accent;
+
+    if (auth.isAuthenticated && !data.bootstrapped && !data.loading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) context.read<MedecinProvider>().loadAll();
+      });
+    }
+
+    return Scaffold(
+      extendBody: true,
+      backgroundColor: OdinColors.canvas,
+      appBar: OdinProAppBar(
+        club: club,
+        subtitle: 'Espace Médecin · ODIN',
+        accentColor: accent,
+        showLogo: true,
+        logoSize: 58,
+        actions: [
+          OdinNotificationBell(
+            unreadCount: data.unreadNotifications,
+            color: OdinColors.textSecondary,
+            onPressed: () {
+              final items = data.notifications
+                  .map(
+                    (n) => OdinNotifItem(
+                      id: n.id,
+                      title: n.title,
+                      body: n.body,
+                      time: n.date,
+                      unread: !n.read,
+                      type: n.type,
+                      color: accent,
                     ),
-                  ),
-                ),
+                  )
+                  .toList();
+              showOdinNotificationsSheet(
+                context,
+                items: items,
+                seeAllRoute: '/medecin/notifications',
+                onMarkAllRead: () => data.markAllRead(),
+                onTapItem: (item) {
+                  if (item.unread) data.markRead([item.id]);
+                },
               );
-            }),
+            },
           ),
-        ),
+          const OdinSettingsButton(
+            roleLabel: 'Espace Médecin',
+            links: [
+              OdinSettingsLink(
+                label: 'Mon profil',
+                subtitle: 'Photo, sécurité',
+                route: '/medecin/profil',
+                icon: Icons.person_outline_rounded,
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: KeyedSubtree(
+        key: ValueKey(location),
+        child: child,
+      ),
+      bottomNavigationBar: OdinGlassNavBar(
+        selectedIndex: index,
+        onSelected: (i) => goToMedecinShellTab(context, i),
+        accentColor: accent,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded),
+            label: 'Accueil',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.folder_shared_outlined),
+            selectedIcon: Icon(Icons.folder_shared_rounded),
+            label: 'Dossiers',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.healing_outlined),
+            selectedIcon: Icon(Icons.healing_rounded),
+            label: 'Blessures',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.medical_services_outlined),
+            selectedIcon: Icon(Icons.medical_services_rounded),
+            label: 'Traitements',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.calendar_month_outlined),
+            selectedIcon: Icon(Icons.calendar_month_rounded),
+            label: 'RDV',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.auto_awesome_outlined),
+            selectedIcon: Icon(Icons.auto_awesome_rounded),
+            label: 'IA',
+          ),
+        ],
       ),
     );
   }

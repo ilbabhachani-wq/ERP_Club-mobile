@@ -8,7 +8,7 @@ class ImgbbService {
   static const _prefsKey = 'imgbb_api_key';
   static const _endpoint = 'https://api.imgbb.com/1/upload';
 
-  /// Clé: dart-define → sinon SharedPreferences (saisie in-app).
+  /// Clé club (web/backend) — dart-define override, sinon SharedPreferences.
   static Future<String?> resolveApiKey() async {
     if (kImgbbApiKey.trim().isNotEmpty) return kImgbbApiKey.trim();
     final prefs = await SharedPreferences.getInstance();
@@ -26,10 +26,7 @@ class ImgbbService {
   static Future<String> uploadBytes(List<int> bytes, {String? name}) async {
     final key = await resolveApiKey();
     if (key == null || key.isEmpty) {
-      throw ImgbbException(
-        'Clé ImgBB manquante. Ajoutez-la via dart-define ou dans l’app.',
-        needsApiKey: true,
-      );
+      throw ImgbbException('Upload photo indisponible (clé ImgBB manquante).');
     }
 
     final res = await http.post(

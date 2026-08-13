@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme/app_tokens.dart';
+import '../../core/theme/odin_colors.dart';
+import '../../core/widgets/odin_widgets.dart';
 import '../../models/coach_models.dart';
 import '../../providers/coach_provider.dart';
+import '../../providers/theme_provider.dart';
 
-const _kBg = Color(0xFF0B0B14);
-const _kCard = Color(0xFF111120);
-const _kAccent = Color(0xFFFF7A00);
+Color get _kCard => OdinColors.canvas2;
+Color get _kAccent => OdinColors.accent;
 const _kGreen = Color(0xFF22C55E);
 const _kRed = Color(0xFFEF4444);
 const _kAmber = Color(0xFFF59E0B);
@@ -686,6 +689,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final prov = context.watch<CoachProvider>();
     final metrics = _metrics(prov);
     final alerts = _alerts(prov);
@@ -698,96 +702,100 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
         .toList()
       ..sort((a, b) => b.forme.compareTo(a.forme));
 
-    return Scaffold(
-      backgroundColor: _kBg,
-      appBar: AppBar(
-        backgroundColor: _kCard,
-        elevation: 0,
-        titleSpacing: 12,
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Composition d\'équipe',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '$_starterCount/11 · ${_subs.length} remp · ${_reserves.length} rés',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.50),
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                height: 1.2,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Réinitialiser',
-            onPressed: _reset,
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-            icon: Icon(
-              Icons.restart_alt,
-              size: 20,
-              color: Colors.white.withValues(alpha: 0.65),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 2, right: 8),
-            child: TextButton.icon(
-              onPressed: _saving ? null : () => _save(prov),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 9),
-                minimumSize: const Size(0, 32),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                backgroundColor: (_justSaved ? _kGreen : _kAccent)
-                    .withValues(alpha: 0.14),
-              ),
-              icon: _saving
-                  ? const SizedBox(
-                      width: 12,
-                      height: 12,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: _kAccent,
-                      ),
-                    )
-                  : Icon(
-                      _justSaved ? Icons.check_circle : Icons.save_outlined,
-                      size: 15,
-                      color: _justSaved ? _kGreen : _kAccent,
-                    ),
-              label: Text(
-                _justSaved ? 'Enregistré' : 'Sauvegarder',
-                maxLines: 1,
-                style: TextStyle(
-                  color: _justSaved ? _kGreen : _kAccent,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _isComplete ? _completeBanner() : null,
+    return OdinBackdrop(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      bottomNavigationBar: _isComplete
+          ? Padding(
+              padding: EdgeInsets.only(bottom: AppSpacing.fabLift(context)),
+              child: _completeBanner(),
+            )
+          : null,
       body: _booting
-          ? const Center(child: CircularProgressIndicator(color: _kAccent))
+          ? Center(child: CircularProgressIndicator(color: _kAccent))
           : Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 8, 8, 0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Composition d\'équipe',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: OdinColors.textPrimary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$_starterCount/11 · ${_subs.length} remp · ${_reserves.length} rés',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: OdinColors.textMuted,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                height: 1.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Réinitialiser',
+                        onPressed: _reset,
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                        icon: Icon(
+                          Icons.restart_alt,
+                          size: 20,
+                          color: OdinColors.textMuted,
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: _saving ? null : () => _save(prov),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 9),
+                          minimumSize: const Size(0, 32),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          backgroundColor: (_justSaved ? _kGreen : _kAccent)
+                              .withValues(alpha: 0.14),
+                        ),
+                        icon: _saving
+                            ? SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: _kAccent,
+                                ),
+                              )
+                            : Icon(
+                                _justSaved ? Icons.check_circle : Icons.save_outlined,
+                                size: 15,
+                                color: _justSaved ? _kGreen : _kAccent,
+                              ),
+                        label: Text(
+                          _justSaved ? 'Enregistré' : 'Sauvegarder',
+                          maxLines: 1,
+                          style: TextStyle(
+                            color: _justSaved ? _kGreen : _kAccent,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 if (prov.nextMatch != null)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
@@ -795,9 +803,9 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                   ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
-                  child: Container(
+                    child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.04),
+                      color: OdinColors.inputFill,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: TabBar(
@@ -808,7 +816,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                       ),
                       indicatorSize: TabBarIndicatorSize.tab,
                       labelColor: _kAccent,
-                      unselectedLabelColor: Colors.white54,
+                      unselectedLabelColor: OdinColors.textMuted,
                       dividerColor: Colors.transparent,
                       labelStyle: const TextStyle(
                         fontSize: 12,
@@ -828,7 +836,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                     children: [
                       // Tab 1 — Terrain
                       ListView(
-                        padding: const EdgeInsets.fromLTRB(14, 16, 14, 32),
+                        padding: const EdgeInsets.fromLTRB(14, 16, 14, AppSpacing.bottomNav),
                         children: [
                           _sectionTitle(
                             'Formation',
@@ -855,7 +863,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                       ),
                       // Tab 2 — Banc
                       ListView(
-                        padding: const EdgeInsets.fromLTRB(14, 16, 14, 32),
+                        padding: const EdgeInsets.fromLTRB(14, 16, 14, AppSpacing.bottomNav),
                         children: [
                           _benchSection(
                             prov,
@@ -897,7 +905,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                                     'Tous les joueurs sont placés ✓',
                                     style: TextStyle(
                                       color:
-                                          Colors.white.withValues(alpha: 0.45),
+                                          OdinColors.textMuted,
                                       fontSize: 12.5,
                                     ),
                                   )
@@ -939,7 +947,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                                     'Aucune indisponibilité déclarée.',
                                     style: TextStyle(
                                       color:
-                                          Colors.white.withValues(alpha: 0.42),
+                                          OdinColors.textMuted,
                                       fontSize: 12.5,
                                     ),
                                   )
@@ -957,7 +965,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                       ),
                       // Tab 3 — Staff
                       ListView(
-                        padding: const EdgeInsets.fromLTRB(14, 16, 14, 32),
+                        padding: const EdgeInsets.fromLTRB(14, 16, 14, AppSpacing.bottomNav),
                         children: [
                           _metricsPanel(metrics),
                           const SizedBox(height: 22),
@@ -985,6 +993,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                 ),
               ],
             ),
+    ),
     );
   }
 
@@ -998,8 +1007,8 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: OdinColors.textPrimary,
               fontSize: 14.5,
               fontWeight: FontWeight.w800,
             ),
@@ -1009,7 +1018,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
           Text(
             trailing,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.45),
+              color: OdinColors.textMuted,
               fontSize: 12,
               fontWeight: FontWeight.w700,
             ),
@@ -1038,7 +1047,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                   color: _kAccent.withValues(alpha: 0.18),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.sports_soccer,
                   color: _kAccent,
                   size: 19,
@@ -1053,8 +1062,8 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                       'Composition pour vs ${match.opponent}',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: OdinColors.textPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                         height: 1.25,
@@ -1065,7 +1074,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                       Text(
                         match.competition,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.55),
+                          color: OdinColors.textMuted,
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1085,7 +1094,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                   ),
                   child: Text(
                     days <= 0 ? 'Jour J' : 'J-$days',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: _kAccent,
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
@@ -1136,18 +1145,18 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
               decoration: BoxDecoration(
                 color: active
                     ? _kAccent.withValues(alpha: 0.16)
-                    : Colors.white.withValues(alpha: 0.04),
+                    : OdinColors.inputFill,
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
                   color: active
                       ? _kAccent.withValues(alpha: 0.6)
-                      : Colors.white.withValues(alpha: 0.08),
+                      : OdinColors.inputFill,
                 ),
               ),
               child: Text(
                 key,
                 style: TextStyle(
-                  color: active ? _kAccent : Colors.white70,
+                  color: active ? _kAccent : OdinColors.textSecondary,
                   fontSize: 12.5,
                   fontWeight: FontWeight.w800,
                 ),
@@ -1166,11 +1175,11 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
         Wrap(
           spacing: 14,
           runSpacing: 8,
-          children: const [
+          children: [
             _LegendItem(color: _kAccent, label: 'Titulaire'),
-            _LegendItem(color: _kYellow, label: 'Gardien'),
+            const _LegendItem(color: _kYellow, label: 'Gardien'),
             _LegendItem(
-              color: Colors.white38,
+              color: OdinColors.textMuted,
               label: 'Poste libre',
               dashed: true,
             ),
@@ -1181,7 +1190,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
         Text(
           'tap = placer · joueur = retirer',
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.40),
+            color: OdinColors.textMuted,
             fontSize: 11.5,
             fontWeight: FontWeight.w600,
           ),
@@ -1219,7 +1228,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
               child: Text(
                 emptyLabel,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.42),
+                  color: OdinColors.textMuted,
                   fontSize: 12.5,
                 ),
               ),
@@ -1381,8 +1390,8 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: OdinColors.textPrimary,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1412,7 +1421,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
             Text(
               emptyLabel,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.42),
+                color: OdinColors.textMuted,
                 fontSize: 12.5,
                 height: 1.4,
               ),
@@ -1440,7 +1449,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
                           child: Text(
                             a.text,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.85),
+                              color: OdinColors.textPrimary,
                               fontSize: 12.5,
                               height: 1.4,
                               fontWeight: FontWeight.w600,
@@ -1474,7 +1483,7 @@ class _CoachCompositionScreenState extends State<CoachCompositionScreen>
               Expanded(
                 child: Text(
                   'Onze de départ complet · ${_subs.length} remplaçant${_subs.length > 1 ? 's' : ''}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _kGreen,
                     fontSize: 12.5,
                     fontWeight: FontWeight.w800,
@@ -1559,18 +1568,11 @@ class _SurfaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        decoration: BoxDecoration(
-          color: color ?? Colors.white.withValues(alpha: 0.035),
-          border: Border.all(
-            color: borderColor ?? Colors.white.withValues(alpha: 0.08),
-          ),
-        ),
-        padding: padding,
-        child: child,
-      ),
+    return GlassCard(
+      raised: borderColor != null,
+      accentColor: borderColor ?? OdinColors.accent,
+      padding: padding,
+      child: child,
     );
   }
 }
@@ -1586,18 +1588,18 @@ class _Pill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: OdinColors.inputFill,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: Colors.white.withValues(alpha: 0.55)),
+          Icon(icon, size: 12, color: OdinColors.textMuted),
           const SizedBox(width: 6),
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.75),
+              color: OdinColors.textSecondary,
               fontSize: 11.5,
               fontWeight: FontWeight.w600,
             ),
@@ -1644,7 +1646,7 @@ class _LegendItem extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.55),
+            color: OdinColors.textMuted,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
@@ -1675,7 +1677,7 @@ class _MetricBar extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.70),
+            color: OdinColors.textSecondary,
             fontSize: 12.5,
             fontWeight: FontWeight.w600,
           ),
@@ -1694,7 +1696,7 @@ class _MetricBar extends StatelessWidget {
                     height: 6,
                     margin: const EdgeInsets.only(top: 2),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.08),
+                      color: OdinColors.inputFill,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: FractionallySizedBox(
@@ -1787,8 +1789,8 @@ class _BenchPlayerCard extends StatelessWidget {
                     player.fullName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: OdinColors.textPrimary,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1797,7 +1799,7 @@ class _BenchPlayerCard extends StatelessWidget {
                   Text(
                     '${player.position} · Forme ${player.forme}%',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.45),
+                      color: OdinColors.textMuted,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1813,7 +1815,7 @@ class _BenchPlayerCard extends StatelessWidget {
                 child: Icon(
                   Icons.close_rounded,
                   size: 18,
-                  color: Colors.white.withValues(alpha: 0.45),
+                  color: OdinColors.textMuted,
                 ),
               ),
             ),
@@ -1890,8 +1892,8 @@ class _AvailableRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.04),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+          color: OdinColors.inputFill,
+          border: Border.all(color: OdinColors.panelBorder),
         ),
         child: Row(
           children: [
@@ -1906,7 +1908,7 @@ class _AvailableRow extends StatelessWidget {
               ),
               child: Text(
                 player.number > 0 ? '${player.number}' : player.initials,
-                style: const TextStyle(
+                style: TextStyle(
                   color: _kAccent,
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
@@ -1922,8 +1924,8 @@ class _AvailableRow extends StatelessWidget {
                     player.fullName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: OdinColors.textPrimary,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1934,7 +1936,7 @@ class _AvailableRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.45),
+                      color: OdinColors.textMuted,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1978,7 +1980,7 @@ class _MiniButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = enabled ? color : Colors.white.withValues(alpha: 0.20);
+    final c = enabled ? color : OdinColors.textMuted;
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: ClipRRect(
@@ -2032,7 +2034,7 @@ class _UnavailableRow extends StatelessWidget {
               child: Text(
                 player.number > 0 ? '${player.number}' : '0',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.85),
+                  color: OdinColors.textPrimary,
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
@@ -2044,8 +2046,8 @@ class _UnavailableRow extends StatelessWidget {
                 player.fullName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: OdinColors.textPrimary,
                   fontSize: 13.5,
                   fontWeight: FontWeight.w700,
                 ),
@@ -2053,7 +2055,7 @@ class _UnavailableRow extends StatelessWidget {
             ),
             Text(
               player.lineupStatusLabel,
-              style: const TextStyle(
+              style: TextStyle(
                 color: _kRed,
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
@@ -2096,13 +2098,13 @@ class _RoleDropdown extends StatelessWidget {
               size: 15,
               color: safeValue != null
                   ? _kAccent
-                  : Colors.white.withValues(alpha: 0.45),
+                  : OdinColors.textMuted,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.70),
+                color: OdinColors.textSecondary,
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.5,
@@ -2117,7 +2119,7 @@ class _RoleDropdown extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
             decoration: BoxDecoration(
               color: const Color(0xFF161625),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+              border: Border.all(color: OdinColors.panelBorder),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String?>(
@@ -2129,22 +2131,22 @@ class _RoleDropdown extends StatelessWidget {
                 icon: Icon(
                   Icons.expand_more,
                   size: 18,
-                  color: Colors.white.withValues(alpha: 0.35),
+                  color: OdinColors.textMuted,
                 ),
                 hint: Text(
                   options.isEmpty ? 'Aucun titulaire' : '— Choisir —',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.35),
+                    color: OdinColors.textMuted,
                     fontSize: 13,
                   ),
                 ),
                 items: [
-                  const DropdownMenuItem<String?>(
+                  DropdownMenuItem<String?>(
                     value: null,
                     child: Text(
                       '— Choisir —',
                       style: TextStyle(
-                        color: Colors.white38,
+                        color: OdinColors.textMuted,
                         fontSize: 13,
                       ),
                     ),
@@ -2156,8 +2158,8 @@ class _RoleDropdown extends StatelessWidget {
                         p.shortName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: OdinColors.textPrimary,
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                         ),
@@ -2204,7 +2206,7 @@ class _PlayerPickerDialog extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: _kCard,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+            border: Border.all(color: OdinColors.panelBorder),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -2216,8 +2218,8 @@ class _PlayerPickerDialog extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: OdinColors.textPrimary,
                           fontSize: 15.5,
                           fontWeight: FontWeight.w800,
                         ),
@@ -2232,7 +2234,7 @@ class _PlayerPickerDialog extends StatelessWidget {
                         child: Icon(
                           Icons.close,
                           size: 19,
-                          color: Colors.white.withValues(alpha: 0.45),
+                          color: OdinColors.textMuted,
                         ),
                       ),
                     ),
@@ -2246,7 +2248,7 @@ class _PlayerPickerDialog extends StatelessWidget {
                   child: Text(
                     '${primary.length + secondary.length} joueur(s) disponible(s)',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.42),
+                      color: OdinColors.textMuted,
                       fontSize: 11.5,
                     ),
                   ),
@@ -2268,7 +2270,7 @@ class _PlayerPickerDialog extends StatelessWidget {
                     ],
                     if (secondary.isNotEmpty) ...[
                       const SizedBox(height: 6),
-                      _header('Autres joueurs', Colors.white38),
+                      _header('Autres joueurs', OdinColors.textMuted),
                       ...secondary.map((p) => _tile(context, p, false)),
                     ],
                   ],
@@ -2308,11 +2310,11 @@ class _PlayerPickerDialog extends StatelessWidget {
             decoration: BoxDecoration(
               color: compatible
                   ? _kGreen.withValues(alpha: 0.06)
-                  : Colors.white.withValues(alpha: 0.03),
+                  : OdinColors.inputFill,
               border: Border.all(
                 color: compatible
                     ? _kGreen.withValues(alpha: 0.22)
-                    : Colors.white.withValues(alpha: 0.07),
+                    : OdinColors.panelBorder,
               ),
             ),
             child: Row(
@@ -2327,7 +2329,7 @@ class _PlayerPickerDialog extends StatelessWidget {
                   ),
                   child: Text(
                     p.number > 0 ? '${p.number}' : p.initials,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: _kAccent,
                       fontSize: 11.5,
                       fontWeight: FontWeight.w900,
@@ -2343,8 +2345,8 @@ class _PlayerPickerDialog extends StatelessWidget {
                         p.fullName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: OdinColors.textPrimary,
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                         ),
@@ -2355,7 +2357,7 @@ class _PlayerPickerDialog extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.45),
+                          color: OdinColors.textMuted,
                           fontSize: 10.5,
                         ),
                       ),
@@ -2473,7 +2475,7 @@ class _PitchBoard extends StatelessWidget {
       height: _slotSize,
       child: CustomPaint(
         painter: _DashedCirclePainter(
-          color: Colors.white.withValues(alpha: 0.70),
+          color: OdinColors.textSecondary,
         ),
         child: Center(
           child: Text(
@@ -2519,7 +2521,7 @@ class _PitchBoard extends StatelessWidget {
             ),
             child: Text(
               player.number > 0 ? '${player.number}' : player.initials,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Color(0xFF0B0B14),
                 fontSize: 12,
                 fontWeight: FontWeight.w900,
@@ -2555,7 +2557,7 @@ class _PitchLinesPainter extends CustomPainter {
     }
 
     final line = Paint()
-      ..color = Colors.white.withValues(alpha: 0.55)
+      ..color = OdinColors.textMuted
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4;
 
@@ -2579,7 +2581,7 @@ class _PitchLinesPainter extends CustomPainter {
       rect.center,
       2.2,
       Paint()
-        ..color = Colors.white.withValues(alpha: 0.55)
+        ..color = OdinColors.textMuted
         ..style = PaintingStyle.fill,
     );
 

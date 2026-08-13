@@ -91,7 +91,17 @@ class _PlayerShellState extends State<PlayerShell> {
             unreadCount: unread,
             onPressed: () => showOdinNotificationsSheet(context, items: notifs),
           ),
-          OdinSettingsButton(roleLabel: 'Espace Joueur'),
+          const OdinSettingsButton(
+            roleLabel: 'Espace Joueur',
+            links: [
+              OdinSettingsLink(
+                label: 'Mon profil',
+                subtitle: 'Carte FIFA, infos',
+                route: '/profil',
+                icon: Icons.person_outline_rounded,
+              ),
+            ],
+          ),
         ],
       ),
       body: KeyedSubtree(
