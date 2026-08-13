@@ -40,6 +40,7 @@ Future<void> showOdinNotificationsSheet(
   HapticFeedback.lightImpact();
   await showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     backgroundColor: OdinColors.panelSolid,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(

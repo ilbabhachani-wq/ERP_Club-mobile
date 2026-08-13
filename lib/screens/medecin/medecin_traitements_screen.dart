@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../providers/medecin_provider.dart';
-import '../../models/medecin_models.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/theme/odin_colors.dart';
+import '../../core/widgets/odin_widgets.dart';
+import '../../core/widgets/scout_widgets.dart';
+import '../../models/medecin_models.dart';
+import '../../providers/medecin_provider.dart';
 
 class MedecinTraitementsScreen extends StatefulWidget {
   const MedecinTraitementsScreen({super.key});
@@ -76,21 +79,8 @@ class _MedecinTraitementsScreenState
   Widget build(BuildContext context) {
     final prov = context.watch<MedecinProvider>();
 
-    return Scaffold(
-      backgroundColor: OdinColors.canvas,
-      appBar: AppBar(
-        backgroundColor: OdinColors.canvas2,
-        elevation: 0,
-        title: Text(
-          'Traitements',
-          style: TextStyle(
-            color: OdinColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-      body: prov.loading
+    return OdinBackdrop(
+      child: prov.loading
         ? const _LoadingWidget()
         : prov.error != null
         ? _ErrorWidget(
@@ -122,14 +112,24 @@ class _MedecinTraitementsScreenState
                 = data
             ),
           )
-        : _InjuryList(
-            injuries: prov.injuries,
-            treatments: _treatments,
-            getPhase: _getPhase,
-            getTreatment: _getTreatment,
-            onSelect: (id) => setState(
-              () => _selectedInjuryId = id
-            ),
+        : Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(AppSpacing.page, 8, AppSpacing.page, 8),
+                child: ScoutSectionLabel('Traitements'),
+              ),
+              Expanded(
+                child: _InjuryList(
+                  injuries: prov.injuries,
+                  treatments: _treatments,
+                  getPhase: _getPhase,
+                  getTreatment: _getTreatment,
+                  onSelect: (id) => setState(
+                    () => _selectedInjuryId = id
+                  ),
+                ),
+              ),
+            ],
           ),
     );
   }
@@ -203,7 +203,7 @@ class _InjuryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.page, 8, AppSpacing.page, AppSpacing.bottomNav),
       itemCount: injuries.length,
       itemBuilder: (_, i) {
         final inj = injuries[i];
@@ -215,39 +215,19 @@ class _InjuryList extends StatelessWidget {
           ? const Color(0xFF8B5CF6)
           : const Color(0xFF22C55E);
 
-        return GestureDetector(
-          onTap: () => onSelect(inj.id),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 6),
-            height: 56,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: OdinColors.glassPanel,
-                  border: Border(
-                    left: BorderSide(color: phaseColor, width: 3),
-                    top: BorderSide(
-                      color: OdinColors.panelBorder.withValues(alpha: 0.5),
-                    ),
-                    right: BorderSide(
-                      color: OdinColors.panelBorder.withValues(alpha: 0.5),
-                    ),
-                    bottom: BorderSide(
-                      color: OdinColors.panelBorder.withValues(alpha: 0.5),
-                    ),
-                  ),
-                ),
-                child: Row(
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: GlassCard(
+            onTap: () => onSelect(inj.id),
+            accentColor: phaseColor,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
                   children: [
                     Container(
-                      width: 32, height: 32,
+                      width: 40, height: 40,
                       decoration: BoxDecoration(
-                        color: phaseColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
+                        color: phaseColor.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       alignment: Alignment.center,
                       child: Text(
@@ -279,8 +259,8 @@ class _InjuryList extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: OdinColors.textPrimary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
                           Text(
@@ -323,13 +303,11 @@ class _InjuryList extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Icon(
-                      Icons.chevron_right,
-                      color: OdinColors.textMuted.withValues(alpha: 0.4),
-                      size: 18,
+                      Icons.chevron_right_rounded,
+                      color: OdinColors.textMuted,
+                      size: 20,
                     ),
                   ],
-                ),
-              ),
             ),
           ).animate().fadeIn(
             delay: Duration(milliseconds: i * 70),
@@ -392,27 +370,13 @@ class _TreatmentDetailState
       slivers: [
         // Header
         SliverToBoxAdapter(
-          child: Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF3B82F6)
-                    .withValues(alpha: 0.10),
-                  Colors.transparent,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius:
-                BorderRadius.circular(18),
-              border: Border.all(
-                color: const Color(0xFF3B82F6)
-                  .withValues(alpha: 0.25),
-              ),
-            ),
-            child: Row(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.page, 8, AppSpacing.page, 8),
+            child: GlassCard(
+              raised: true,
+              accentColor: AppColors.info,
+              padding: const EdgeInsets.all(14),
+              child: Row(
               children: [
                 GestureDetector(
                   onTap: widget.onBack,
@@ -482,6 +446,7 @@ class _TreatmentDetailState
                   ],
                 ),
               ],
+            ),
             ),
           ),
         ),
@@ -732,7 +697,7 @@ class _TreatmentDetailState
         _SectionHeader(
           title: 'Notes cliniques',
           icon: Icons.note_outlined,
-          color: const Color(0xFFFF7A00),
+          color: OdinColors.accent,
         ),
         SliverToBoxAdapter(
           child: Padding(
@@ -763,7 +728,7 @@ class _TreatmentDetailState
                   borderRadius:
                     BorderRadius.circular(14),
                   borderSide: BorderSide(
-                    color: const Color(0xFFFF7A00)
+                    color: OdinColors.accent
                       .withValues(alpha: 0.25),
                   ),
                 ),
@@ -771,7 +736,7 @@ class _TreatmentDetailState
                   borderRadius:
                     BorderRadius.circular(14),
                   borderSide: BorderSide(
-                    color: const Color(0xFFFF7A00)
+                    color: OdinColors.accent
                       .withValues(alpha: 0.20),
                   ),
                 ),
@@ -779,7 +744,7 @@ class _TreatmentDetailState
                   borderRadius:
                     BorderRadius.circular(14),
                   borderSide: const BorderSide(
-                    color: Color(0xFFFF7A00),
+                    color: OdinColors.accent,
                   ),
                 ),
                 contentPadding: const EdgeInsets.all(
@@ -1087,7 +1052,7 @@ class _LoadingWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           CircularProgressIndicator(
-            color: Color(0xFFFF7A00), strokeWidth: 2
+            color: OdinColors.accent, strokeWidth: 2
           ),
           SizedBox(height: 12),
           Text(
@@ -1133,7 +1098,7 @@ class _ErrorWidget extends StatelessWidget {
             child: const Text(
               'Réessayer',
               style: TextStyle(
-                color: Color(0xFFFF7A00)
+                color: OdinColors.accent
               ),
             ),
           ),

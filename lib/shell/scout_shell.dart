@@ -132,6 +132,11 @@ class ScoutShell extends StatelessWidget {
             label: 'Watchlist',
           ),
           NavigationDestination(
+            icon: Icon(Icons.auto_awesome_outlined),
+            selectedIcon: Icon(Icons.auto_awesome_rounded),
+            label: 'IA',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.apps_outlined),
             selectedIcon: Icon(Icons.apps),
             label: 'Modules',

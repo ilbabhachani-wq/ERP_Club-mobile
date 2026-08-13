@@ -16,11 +16,11 @@ const String kAnalysteMlUrl = String.fromEnvironment(
   defaultValue: '',
 );
 
-/// Clé API ImgBB (https://api.imgbb.com/) pour upload photos profil.
-/// Exemple: `flutter run --dart-define=IMGBB_API_KEY=votre_cle`
+/// Clé API ImgBB — même valeur que le backend / web (`IMGBB_API_KEY`).
+/// Override: `flutter run --dart-define=IMGBB_API_KEY=...`
 const String kImgbbApiKey = String.fromEnvironment(
   'IMGBB_API_KEY',
-  defaultValue: '',
+  defaultValue: '9c78dd4d38eeed795d1ef908540d73e4',
 );
 
 /// Endpoints Viiv GX17 / wearable (ordre de priorité côté service).

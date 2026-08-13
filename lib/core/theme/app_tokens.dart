@@ -26,7 +26,19 @@ abstract final class AppSpacing {
   static const l = 24.0;
   static const xl = 32.0;
   static const page = 16.0;
-  static const bottomNav = 110.0;
+  /// Padding sous les listes pour passer au-dessus de la glass nav.
+  static const bottomNav = 128.0;
+  static const glassNavBar = 68.0;
+  static const glassNavGap = 16.0;
+
+  /// Scaffold FAB: la safe area est déjà gérée, on relève seulement la barre.
+  static double fabLift(BuildContext context) => glassNavBar + glassNavGap;
+
+  /// `bottom` d’un FAB `Positioned` dans un body `extendBody`.
+  static double fabBottom(BuildContext context) {
+    final safe = MediaQuery.paddingOf(context).bottom;
+    return (safe > 0 ? safe : 10) + glassNavBar + glassNavGap;
+  }
 }
 
 abstract final class AppRadius {

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../providers/medecin_provider.dart';
-import '../../models/medecin_models.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/theme/odin_colors.dart';
+import '../../core/widgets/odin_widgets.dart';
+import '../../core/widgets/scout_widgets.dart';
+import '../../models/medecin_models.dart';
+import '../../providers/medecin_provider.dart';
 
 class MedecinDossiersScreen extends StatefulWidget {
   const MedecinDossiersScreen({super.key});
@@ -31,59 +34,52 @@ class _MedecinDossiersScreenState
   Widget build(BuildContext context) {
     final prov = context.watch<MedecinProvider>();
 
-    return Scaffold(
-      backgroundColor: OdinColors.canvas,
-      appBar: AppBar(
-        backgroundColor: OdinColors.canvas2,
-        elevation: 0,
-        title: Text(
-          'Dossiers médicaux',
-          style: TextStyle(
-            color: OdinColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              16, 0, 16, 10
-            ),
-            child: TextField(
-              onChanged: (v) =>
-                setState(() => _search = v),
-              style: TextStyle(
-                color: OdinColors.textPrimary, fontSize: 14
-              ),
+    return OdinBackdrop(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.page, 8, AppSpacing.page, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const ScoutSectionLabel('Dossiers médicaux'),
+                const SizedBox(height: 12),
+                TextField(
+              onChanged: (v) => setState(() => _search = v),
+              style: TextStyle(color: OdinColors.textPrimary, fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Rechercher un joueur...',
                 hintStyle: TextStyle(
-                  color: OdinColors.textMuted.withValues(alpha: 0.6),
+                  color: OdinColors.textMuted,
                   fontSize: 14,
                 ),
                 prefixIcon: Icon(
                   Icons.search,
-                  color: OdinColors.textMuted.withValues(alpha: 0.6),
+                  color: OdinColors.textMuted,
                   size: 20,
                 ),
                 filled: true,
-                fillColor: OdinColors.panelBorder.withValues(alpha: 0.5),
+                fillColor: OdinColors.inputFill,
                 border: OutlineInputBorder(
-                  borderRadius:
-                    BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: OdinColors.panelBorder),
                 ),
-                contentPadding:
-                  const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12
-                  ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: OdinColors.panelBorder),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: OdinColors.accent.withValues(alpha: 0.5)),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
+              ],
+            ),
           ),
-        ),
-      ),
-      body: prov.loading
+          Expanded(
+            child: prov.loading
         ? const _LoadingState()
         : prov.error != null
         ? _ErrorState(
@@ -111,6 +107,9 @@ class _MedecinDossiersScreenState
             onSelect: (p) =>
               setState(() => _selected = p),
           ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -141,7 +140,7 @@ class _PlayerList extends StatelessWidget {
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.page, 0, AppSpacing.page, AppSpacing.bottomNav),
       itemCount: players.length,
       itemBuilder: (context, i) {
         final p = players[i];
@@ -199,100 +198,78 @@ class _PlayerCard extends StatelessWidget {
         ? const Color(0xFFEF4444)
         : statusColor;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 6),
-        height: 56,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10, vertical: 8,
-            ),
-            decoration: BoxDecoration(
-              color: OdinColors.inputFill,
-              border: Border(
-                left: BorderSide(
-                  color: statusColor, width: 3,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GlassCard(
+        onTap: onTap,
+        accentColor: statusColor,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                player.initials,
+                style: TextStyle(
+                  color: statusColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 32, height: 32,
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    player.initials,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    player.fullName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: statusColor,
-                      fontSize: 11,
+                      color: OdinColors.textPrimary,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        player.fullName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: OdinColors.textPrimary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Text(
-                        _translatePosition(player.position),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: OdinColors.textMuted,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: badgeColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(99),
-                    border: Border.all(
-                      color: badgeColor.withValues(alpha: 0.30),
-                    ),
-                  ),
-                  child: Text(
-                    badgeLabel,
+                  const SizedBox(height: 2),
+                  Text(
+                    _translatePosition(player.position),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: badgeColor,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
+                      color: OdinColors.textMuted,
+                      fontSize: 12,
                     ),
                   ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.chevron_right,
-                  color: OdinColors.textMuted.withValues(alpha: 0.4),
-                  size: 18,
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: badgeColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(color: badgeColor.withValues(alpha: 0.30)),
+              ),
+              child: Text(
+                badgeLabel,
+                style: TextStyle(
+                  color: badgeColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right_rounded, color: OdinColors.textMuted, size: 20),
+          ],
         ),
       ),
     );
@@ -349,29 +326,13 @@ class _DossierDetail extends StatelessWidget {
       slivers: [
         // App bar with player info
         SliverToBoxAdapter(
-          child: Container(
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(
-                alpha: 0.08
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: statusColor.withValues(
-                  alpha: 0.25
-                ),
-              ),
-              gradient: LinearGradient(
-                colors: [
-                  statusColor.withValues(alpha: 0.10),
-                  Colors.transparent,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Row(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.page, 4, AppSpacing.page, 8),
+            child: GlassCard(
+              raised: true,
+              accentColor: statusColor,
+              padding: const EdgeInsets.all(14),
+              child: Row(
               children: [
                 GestureDetector(
                   onTap: onBack,
@@ -452,6 +413,7 @@ class _DossierDetail extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
             ),
           ).animate().fadeIn().slideY(
             begin: -0.1, end: 0
@@ -968,7 +930,7 @@ class _LoadingState extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           CircularProgressIndicator(
-            color: Color(0xFFFF7A00),
+            color: OdinColors.accent,
             strokeWidth: 2,
           ),
           SizedBox(height: 12),
@@ -1016,9 +978,7 @@ class _ErrorState extends StatelessWidget {
             onPressed: onRetry,
             child: const Text(
               'Réessayer',
-              style: TextStyle(
-                color: Color(0xFFFF7A00)
-              ),
+              style: TextStyle(color: OdinColors.accent),
             ),
           ),
         ],

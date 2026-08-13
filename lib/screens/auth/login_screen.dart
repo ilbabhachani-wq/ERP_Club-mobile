@@ -19,25 +19,6 @@ import '../../providers/viiv_provider.dart';
 
 const _featureTags = ['IA', 'Analyse', 'Performance', 'Recrutement'];
 
-bool _isMedecinLogin(String role, String email) {
-  final r = role.toUpperCase();
-  final e = email.toLowerCase();
-  return r == 'MEDICAL' ||
-      r == 'MEDECIN' ||
-      r == 'MEDECIN_CLUB' ||
-      r == 'DOCTOR' ||
-      e == 'asmamed@odin.tn';
-}
-
-bool _isCoachLogin(String role, String email) {
-  final r = role.toUpperCase();
-  final e = email.toLowerCase();
-  return r == 'COACH' ||
-      r == 'ENTRAINEUR' ||
-      r == 'ENTRAÎNEUR' ||
-      e == 'roccocoach@gmail.com';
-}
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -98,9 +79,9 @@ class _LoginScreenState extends State<LoginScreen> {
         await context.read<ResponsableDataProvider>().load(
               orgId: user.organization?.id,
             );
-      } else if (_isMedecinLogin(user.role, user.email)) {
+      } else if (user.isMedecin) {
         await context.read<MedecinProvider>().loadAll();
-      } else if (_isCoachLogin(user.role, user.email)) {
+      } else if (user.isCoach) {
         await context.read<CoachProvider>().loadAll();
       } else {
         await context.read<JoueurDataProvider>().load(user);
@@ -108,28 +89,10 @@ class _LoginScreenState extends State<LoginScreen> {
         await context.read<ViivProvider>().load(context.read<JoueurDataProvider>());
       }
       if (!mounted) return;
-      final isMedecin = _isMedecinLogin(user.role, user.email);
-      final isCoach = _isCoachLogin(user.role, user.email);
       setState(() {
-        _roleLabel = user.isAnalyste
-            ? 'Espace Analyste'
-            : user.isScout
-                ? 'Espace Scout'
-                : user.isPreparateur
-                    ? 'Espace Préparateur'
-                    : user.isResponsable
-                        ? 'Espace Responsable'
-                        : isMedecin
-                            ? 'Espace Médecin'
-                            : isCoach
-                                ? 'Espace Coach'
-                                : 'Espace Joueur';
+        _roleLabel = user.spaceLabel;
         _clubName = user.organization?.clubName ?? 'ODIN Club';
-        _pendingRoute = isMedecin
-            ? '/medecin/dossiers'
-            : isCoach
-                ? '/coach/entrainements'
-                : user.homeRoute;
+        _pendingRoute = user.homeRoute;
         _showAuthOverlay = true;
       });
     } else {

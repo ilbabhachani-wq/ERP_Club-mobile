@@ -267,7 +267,7 @@ class _ScoutMissionsScreenState extends State<ScoutMissionsScreen> {
           ),
           Positioned(
             right: AppSpacing.page,
-            bottom: AppSpacing.bottomNav - 60,
+            bottom: AppSpacing.fabBottom(context),
             child: FloatingActionButton(
               onPressed: () {
                 HapticFeedback.mediumImpact();

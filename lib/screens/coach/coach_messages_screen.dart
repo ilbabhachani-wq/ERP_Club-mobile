@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/coach_models.dart';
 import '../../providers/coach_provider.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/theme/odin_colors.dart';
+import '../../core/widgets/odin_widgets.dart';
 import '../../providers/theme_provider.dart';
 
 enum _RoleFilter { tous, joueurs, staff }
@@ -15,8 +17,6 @@ class CoachMessagesScreen extends StatefulWidget {
 }
 
 class _CoachMessagesScreenState extends State<CoachMessagesScreen> {
-  static Color get _bg => OdinColors.canvas;
-  static Color get _bar => OdinColors.canvas2;
   static const _accent = OdinColors.accent;
 
   List<CoachContact> _contacts = [];
@@ -178,31 +178,40 @@ class _CoachMessagesScreenState extends State<CoachMessagesScreen> {
   @override
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
-    return Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: _bar,
-        elevation: 0,
-        leading: _peerId == null
-            ? null
-            : IconButton(
-                icon: Icon(Icons.arrow_back, color: OdinColors.textSecondary),
-                onPressed: () => setState(() {
-                  _peerId = null;
-                  _peerName = null;
-                  _thread = [];
-                }),
+    return OdinBackdrop(
+      child: Column(
+        children: [
+          if (_peerId != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 4, 16, 0),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.arrow_back_rounded, color: OdinColors.textSecondary),
+                    onPressed: () => setState(() {
+                      _peerId = null;
+                      _peerName = null;
+                      _thread = [];
+                    }),
+                  ),
+                  Expanded(
+                    child: Text(
+                      _peerName ?? 'Conversation',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: OdinColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-        title: Text(
-          _peerId == null ? 'Messages' : (_peerName ?? 'Conversation'),
-          style: TextStyle(
-            color: OdinColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+            ),
+          Expanded(child: _peerId == null ? _contactsView() : _threadView()),
+        ],
       ),
-      body: _peerId == null ? _contactsView() : _threadView(),
     );
   }
 
@@ -239,10 +248,18 @@ class _CoachMessagesScreenState extends State<CoachMessagesScreen> {
                       },
                     ),
               filled: true,
-              fillColor: OdinColors.panelBorder.withValues(alpha: 0.5),
+              fillColor: OdinColors.inputFill,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: OdinColors.panelBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: OdinColors.panelBorder),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: OdinColors.accent.withValues(alpha: 0.5)),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 14,
@@ -293,7 +310,7 @@ class _CoachMessagesScreenState extends State<CoachMessagesScreen> {
                       color: _accent,
                       onRefresh: _loadContacts,
                       child: ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, AppSpacing.bottomNav),
                         itemCount: list.length,
                         itemBuilder: (context, i) {
                           final c = list[i];
@@ -343,17 +360,15 @@ class _CoachMessagesScreenState extends State<CoachMessagesScreen> {
             16,
             10,
             12,
-            10 + MediaQuery.of(context).viewInsets.bottom,
+            10 + MediaQuery.of(context).viewInsets.bottom + AppSpacing.fabLift(context),
           ),
           decoration: BoxDecoration(
-            color: _bar,
+            color: OdinColors.panelSolid.withValues(alpha: 0.92),
             border: Border(
               top: BorderSide(color: OdinColors.panelBorder),
             ),
           ),
-          child: SafeArea(
-            top: false,
-            child: Row(
+          child: Row(
               children: [
                 Expanded(
                   child: TextField(
@@ -381,23 +396,20 @@ class _CoachMessagesScreenState extends State<CoachMessagesScreen> {
                 ),
                 const SizedBox(width: 8),
                 Material(
-                  color: _sending
-                      ? OdinColors.panelBorder
-                      : _accent,
+                  color: _sending ? OdinColors.panelBorder : _accent,
                   shape: const CircleBorder(),
                   child: InkWell(
                     customBorder: const CircleBorder(),
                     onTap: _sending ? null : _send,
-                    child: SizedBox(
+                    child: const SizedBox(
                       width: 44,
                       height: 44,
-                      child: Icon(Icons.send, color: OdinColors.textPrimary, size: 20),
+                      child: Icon(Icons.send_rounded, color: Colors.white, size: 20),
                     ),
                   ),
                 ),
               ],
             ),
-          ),
         ),
       ],
     );
@@ -437,20 +449,16 @@ class _FilterChip extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: selected
-              ? OdinColors.accent.withValues(alpha: 0.22)
-              : OdinColors.panelBorder.withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(20),
+          color: selected ? OdinColors.accent : OdinColors.inputFill,
+          borderRadius: BorderRadius.circular(99),
           border: Border.all(
-            color: selected
-                ? OdinColors.accent
-                : OdinColors.panelBorder,
+            color: selected ? OdinColors.accent : OdinColors.panelBorder,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? OdinColors.accent : OdinColors.textSecondary,
+            color: selected ? Colors.white : OdinColors.textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w700,
           ),
@@ -470,21 +478,13 @@ class _ContactRow extends StatelessWidget {
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
     final c = contact;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Ink(
-          height: 72,
-          decoration: BoxDecoration(
-            color: OdinColors.glassPanel,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
+    return GlassCard(
+      onTap: onTap,
+      accentColor: OdinColors.accent,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: SizedBox(
+        height: 52,
+        child: Row(
               children: [
                 Container(
                   width: 44,
@@ -597,8 +597,6 @@ class _ContactRow extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ),
       ),
     );
   }

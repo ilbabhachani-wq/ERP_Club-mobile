@@ -3,7 +3,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../models/coach_models.dart';
 import '../../providers/coach_provider.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/theme/odin_colors.dart';
+import '../../core/widgets/odin_widgets.dart';
+import '../../core/widgets/scout_widgets.dart';
 import '../../providers/theme_provider.dart';
 
 /// Statuts cyclables (tap badge) — Exemption médicale est verrouillée.
@@ -23,8 +26,6 @@ class CoachPresencesScreen extends StatefulWidget {
 }
 
 class _CoachPresencesScreenState extends State<CoachPresencesScreen> {
-  static Color get _bg => OdinColors.canvas;
-  static Color get _bar => OdinColors.canvas2;
   static const _accent = OdinColors.accent;
 
   String? _sessionId;
@@ -126,7 +127,8 @@ class _CoachPresencesScreenState extends State<CoachPresencesScreen> {
     final current = _att[player.id] ?? 'Présent';
     final chosen = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: _bar,
+      useRootNavigator: true,
+      backgroundColor: OdinColors.panelSolid,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
@@ -272,40 +274,16 @@ class _CoachPresencesScreenState extends State<CoachPresencesScreen> {
       return null;
     }();
 
-    return Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: _bar,
-        elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Présence à l\'Entraînement',
-              style: TextStyle(
-                color: OdinColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            Text(
-              'Enregistrement officiel par séance',
-              style: TextStyle(color: OdinColors.textSecondary, fontSize: 10),
-            ),
-          ],
+    return OdinBackdrop(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: AppSpacing.fabLift(context)),
+        child: FloatingActionButton.extended(
+          backgroundColor: OdinColors.accent,
+          onPressed: _saving || _sessionId == null ? null : () => _save(prov),
+          label: Text(_saving ? '...' : 'Sauvegarder', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         ),
-        actions: [
-          TextButton(
-            onPressed: _saving || _sessionId == null ? null : () => _save(prov),
-            child: Text(
-              _saving ? '...' : 'Sauvegarder',
-              style: const TextStyle(
-                color: _accent,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
       ),
       body: prov.loading
           ? const Center(child: CircularProgressIndicator(color: _accent))
@@ -321,7 +299,7 @@ class _CoachPresencesScreenState extends State<CoachPresencesScreen> {
                   ),
                 )
               : ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                  padding: EdgeInsets.fromLTRB(16, 16, 16, AppSpacing.bottomNav + 56),
                   children: [
                     // Planifiée / En cours / Terminée (visuel uniquement)
                     Row(
@@ -351,15 +329,7 @@ class _CoachPresencesScreenState extends State<CoachPresencesScreen> {
                       ],
                     ),
                     const SizedBox(height: 18),
-                    Text(
-                      'SÉANCE D\'ENTRAÎNEMENT',
-                      style: TextStyle(
-                        color: OdinColors.textSecondary,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+                    const ScoutSectionLabel('Séance d\'entraînement'),
                     const SizedBox(height: 10),
                     SizedBox(
                       height: 68,
@@ -428,15 +398,10 @@ class _CoachPresencesScreenState extends State<CoachPresencesScreen> {
                     if (selected != null) ...[
                       const SizedBox(height: 16),
                       // Hero card séance sélectionnée
-                      Container(
+                      GlassCard(
+                        raised: true,
+                        accentColor: _accent,
                         padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: OdinColors.inputFill,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: OdinColors.panelBorder,
-                          ),
-                        ),
                         child: Row(
                           children: [
                             Container(
@@ -539,15 +504,7 @@ class _CoachPresencesScreenState extends State<CoachPresencesScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    Text(
-                      'LISTE DES JOUEURS',
-                      style: TextStyle(
-                        color: OdinColors.textSecondary,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+                    const ScoutSectionLabel('Liste des joueurs'),
                     const SizedBox(height: 6),
                     Text(
                       'Tap badge = cycler · Appui long = choisir',
@@ -576,15 +533,7 @@ class _CoachPresencesScreenState extends State<CoachPresencesScreen> {
                     }),
                     if (prov.attendanceHistory.isNotEmpty) ...[
                       const SizedBox(height: 20),
-                      Text(
-                        'HISTORIQUE',
-                        style: TextStyle(
-                          color: OdinColors.textSecondary,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
+                      const ScoutSectionLabel('Historique'),
                       const SizedBox(height: 12),
                       ...prov.attendanceHistory.take(8).map((h) {
                         final rate = (h['rate'] as num?)?.toInt() ?? 0;
@@ -593,60 +542,55 @@ class _CoachPresencesScreenState extends State<CoachPresencesScreen> {
                             : rate >= 75
                                 ? const Color(0xFFF59E0B)
                                 : const Color(0xFFEF4444);
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: OdinColors.glassPanel,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: OdinColors.panelBorder.withValues(alpha: 0.5),
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: GlassCard(
+                            accentColor: rc,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 14,
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${h['sessionTitle'] ?? 'Séance'}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: OdinColors.textSecondary,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    if ((h['date'] as String?)?.isNotEmpty ==
-                                        true)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 2),
-                                        child: Text(
-                                          '${h['date']}',
-                                          style: TextStyle(
-                                            color: OdinColors.textMuted
-                                                .withValues(alpha: 0.7),
-                                            fontSize: 11,
-                                          ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${h['sessionTitle'] ?? 'Séance'}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: OdinColors.textPrimary,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                  ],
+                                      if ((h['date'] as String?)?.isNotEmpty ==
+                                          true)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            '${h['date']}',
+                                            style: TextStyle(
+                                              color: OdinColors.textMuted,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                '$rate%',
-                                style: TextStyle(
-                                  color: rc,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
+                                Text(
+                                  '$rate%',
+                                  style: TextStyle(
+                                    color: rc,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       }),
@@ -654,6 +598,7 @@ class _CoachPresencesScreenState extends State<CoachPresencesScreen> {
                     const SizedBox(height: 24),
                   ],
                 ),
+    ),
     );
   }
 }
@@ -744,40 +689,31 @@ class _KpiTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-        decoration: BoxDecoration(
-          color: item.color.withValues(alpha: 0.08),
-          border: Border(
-            left: BorderSide(color: item.color, width: 3),
-            top: BorderSide(color: item.color.withValues(alpha: 0.2)),
-            right: BorderSide(color: item.color.withValues(alpha: 0.2)),
-            bottom: BorderSide(color: item.color.withValues(alpha: 0.2)),
+    return GlassCard(
+      raised: true,
+      accentColor: item.color,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            item.label,
+            style: TextStyle(
+              color: AppColors.muted,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              item.label,
-              style: TextStyle(
-                color: OdinColors.textSecondary.withValues(alpha: 0.7),
-                fontSize: 10,
-              ),
+          const SizedBox(height: 4),
+          Text(
+            item.value,
+            style: TextStyle(
+              color: AppColors.text,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
             ),
-            const SizedBox(height: 4),
-            Text(
-              item.value,
-              style: TextStyle(
-                color: item.color,
-                fontWeight: FontWeight.w800,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -804,23 +740,12 @@ class _PlayerRow extends StatelessWidget {
     context.watch<ThemeProvider>();
     return GestureDetector(
       onLongPress: onLongPress,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        height: 68,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: OdinColors.glassPanel,
-              border: Border(
-                left: BorderSide(color: color, width: 3),
-                top: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-                right: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-                bottom: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-              ),
-            ),
-            child: Row(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: GlassCard(
+          accentColor: color,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
               children: [
                 Container(
                   width: 40,
@@ -911,7 +836,6 @@ class _PlayerRow extends StatelessWidget {
                 ),
               ],
             ),
-          ),
         ),
       ),
     );

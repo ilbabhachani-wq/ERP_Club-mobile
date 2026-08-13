@@ -34,7 +34,17 @@ class AnalysteShell extends StatelessWidget {
         logoSize: 58,
         actions: [
           const AnalysteNotificationBell(),
-          OdinSettingsButton(roleLabel: 'Espace Analyste'),
+          const OdinSettingsButton(
+            roleLabel: 'Espace Analyste',
+            links: [
+              OdinSettingsLink(
+                label: 'Mon profil',
+                subtitle: 'Photo, sécurité',
+                route: '/analyste/profil',
+                icon: Icons.person_outline_rounded,
+              ),
+            ],
+          ),
         ],
       ),
       body: KeyedSubtree(
@@ -65,6 +75,11 @@ class AnalysteShell extends StatelessWidget {
             icon: Icon(Icons.watch_outlined),
             selectedIcon: Icon(Icons.watch_rounded),
             label: 'Viiv',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.auto_awesome_outlined),
+            selectedIcon: Icon(Icons.auto_awesome_rounded),
+            label: 'IA',
           ),
           NavigationDestination(
             icon: Icon(Icons.apps_outlined),

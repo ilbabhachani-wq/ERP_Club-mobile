@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../animations/odin_animations.dart';
+import '../theme/app_tokens.dart';
 import '../theme/odin_colors.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/app_providers.dart';
@@ -1216,7 +1217,7 @@ class OdinGlassNavBar extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
           child: Container(
-            height: 68,
+            height: AppSpacing.glassNavBar,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               color: OdinColors.navFill,

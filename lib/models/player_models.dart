@@ -54,6 +54,7 @@ class OdinUser {
   bool get isPreparateur => role == 'preparateur';
   bool get isResponsable => role == 'responsable';
   bool get isCoach => role == 'coach';
+  bool get isMedecin => role == 'medical';
   bool get isJoueur =>
       role == 'joueur' ||
       (playerId != null &&
@@ -71,8 +72,19 @@ class OdinUser {
     if (isScout) return '/scout';
     if (isPreparateur) return '/preparateur';
     if (isResponsable) return '/responsable';
-    if (isCoach) return '/coach/entrainements';
+    if (isCoach) return '/coach';
+    if (isMedecin) return '/medecin';
     return '/';
+  }
+
+  String get spaceLabel {
+    if (isAnalyste) return 'Espace Analyste';
+    if (isScout) return 'Espace Scout';
+    if (isPreparateur) return 'Espace Préparateur';
+    if (isResponsable) return 'Espace Responsable';
+    if (isCoach) return 'Espace Coach';
+    if (isMedecin) return 'Espace Médecin';
+    return 'Espace Joueur';
   }
 
   static String _mapRole(Map<String, dynamic> json) {
@@ -85,17 +97,36 @@ class OdinUser {
       'Recruteur': 'recruteur',
       'Coach': 'coach',
       'COACH': 'coach',
+      'Entraîneur': 'coach',
+      'Entraineur': 'coach',
+      'ENTRAINEUR': 'coach',
       'Médecin': 'medical',
+      'MEDECIN': 'medical',
+      'MEDECIN_CLUB': 'medical',
+      'Doctor': 'medical',
+      'DOCTOR': 'medical',
       'Scout': 'scout',
       'Finance': 'finance',
       'Joueur': 'joueur',
     };
+    final email = (json['email'] as String?)?.toLowerCase();
+    if (email == 'roccocoach@gmail.com') return 'coach';
+    if (email == 'asmamed@odin.tn') return 'medical';
+
     final memberRole = json['clubMemberRole'] as String?;
     if (memberRole != null) {
       if (clubMap.containsKey(memberRole)) return clubMap[memberRole]!;
       final upper = memberRole.toUpperCase();
-      if (upper == 'COACH') return 'coach';
-      if (upper == 'MEDECIN' || upper == 'MÉDECIN') return 'medical';
+      if (upper == 'COACH' || upper == 'ENTRAINEUR' || upper == 'ENTRAÎNEUR') {
+        return 'coach';
+      }
+      if (upper == 'MEDECIN' ||
+          upper == 'MÉDECIN' ||
+          upper == 'MEDECIN_CLUB' ||
+          upper == 'DOCTOR' ||
+          upper == 'MEDICAL') {
+        return 'medical';
+      }
     }
 
     final backendRole = (json['role'] as String?)?.toUpperCase();

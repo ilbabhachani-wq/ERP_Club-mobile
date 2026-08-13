@@ -20,6 +20,7 @@ Future<void> showAvatarChangeSheet(
   final avatar = context.read<AvatarProvider>();
   final source = await showModalBottomSheet<ImageSource?>(
     context: context,
+    useRootNavigator: true,
     backgroundColor: OdinColors.panelSolid,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
@@ -110,26 +111,7 @@ Future<void> showAvatarChangeSheet(
       );
     }
   } on ImgbbException catch (e) {
-    if (!context.mounted) return;
-    if (e.needsApiKey) {
-      final saved = await _askImgbbKey(context);
-      if (saved && context.mounted) {
-        try {
-          await upload();
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Photo mise à jour ✓'), backgroundColor: Color(0xFF22C55E)),
-            );
-          }
-        } catch (err) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('$err'), backgroundColor: OdinColors.danger),
-            );
-          }
-        }
-      }
-    } else {
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.message), backgroundColor: OdinColors.danger),
       );
@@ -141,47 +123,4 @@ Future<void> showAvatarChangeSheet(
       );
     }
   }
-}
-
-Future<bool> _askImgbbKey(BuildContext context) async {
-  final controller = TextEditingController();
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      backgroundColor: OdinColors.panelSolid,
-      title: const Text('Clé API ImgBB'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-           Text(
-            'Créez une clé gratuite sur api.imgbb.com puis collez-la ici.',
-            style: TextStyle(fontSize: 13, color: OdinColors.textMuted),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: controller,
-            obscureText: true,
-            decoration: const InputDecoration(
-              hintText: 'Votre clé ImgBB',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
-        FilledButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          style: FilledButton.styleFrom(backgroundColor: OdinColors.accent),
-          child: const Text('Enregistrer'),
-        ),
-      ],
-    ),
-  );
-  if (ok == true && controller.text.trim().isNotEmpty) {
-    await ImgbbService.saveApiKey(controller.text.trim());
-    return true;
-  }
-  return false;
 }

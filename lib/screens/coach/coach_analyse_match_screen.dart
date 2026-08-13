@@ -3,7 +3,10 @@ import 'package:provider/provider.dart';
 import '../../models/coach_models.dart';
 import '../../providers/app_providers.dart';
 import '../../providers/coach_provider.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/theme/odin_colors.dart';
+import '../../core/widgets/odin_widgets.dart';
+import '../../core/widgets/scout_widgets.dart';
 import '../../providers/theme_provider.dart';
 
 class CoachAnalyseMatchScreen extends StatefulWidget {
@@ -15,8 +18,6 @@ class CoachAnalyseMatchScreen extends StatefulWidget {
 }
 
 class _CoachAnalyseMatchScreenState extends State<CoachAnalyseMatchScreen> {
-  static Color get _bg => OdinColors.canvas;
-  static Color get _bar => OdinColors.canvas2;
   static const _accent = OdinColors.accent;
 
   int _index = 0;
@@ -212,20 +213,9 @@ class _CoachAnalyseMatchScreenState extends State<CoachAnalyseMatchScreen> {
     final match =
         items.isEmpty ? null : items[_index.clamp(0, items.length - 1)];
 
-    return Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: _bar,
-        elevation: 0,
-        title: Text(
-          'Analyse de match',
-          style: TextStyle(
-            color: OdinColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
+    return OdinBackdrop(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       body: prov.loading && items.isEmpty
           ? const Center(
               child: CircularProgressIndicator(color: _accent),
@@ -264,7 +254,7 @@ class _CoachAnalyseMatchScreenState extends State<CoachAnalyseMatchScreen> {
                                   resultColor: _resultColor(match.resultLabel),
                                 ),
                                 const SizedBox(height: 16),
-                                const _SectionTitle('Statistiques'),
+                                const ScoutSectionLabel('Statistiques'),
                                 const SizedBox(height: 12),
                                 _StatsGrid(
                                   goals: _goals,
@@ -283,7 +273,7 @@ class _CoachAnalyseMatchScreenState extends State<CoachAnalyseMatchScreen> {
                                   onRed: (v) => setState(() => _red = v),
                                 ),
                                 const SizedBox(height: 16),
-                                const _SectionTitle('Note équipe'),
+                                const ScoutSectionLabel('Note équipe'),
                                 const SizedBox(height: 12),
                                 _TeamRatingCard(
                                   rating: _teamRating,
@@ -291,7 +281,7 @@ class _CoachAnalyseMatchScreenState extends State<CoachAnalyseMatchScreen> {
                                       setState(() => _teamRating = v),
                                 ),
                                 const SizedBox(height: 16),
-                                _SectionTitle(
+                                ScoutSectionLabel(
                                   'Notes joueurs (${prov.players.length})',
                                 ),
                                 const SizedBox(height: 12),
@@ -324,7 +314,7 @@ class _CoachAnalyseMatchScreenState extends State<CoachAnalyseMatchScreen> {
                                     );
                                   }),
                                 const SizedBox(height: 4),
-                                const _SectionTitle('Notes du coach'),
+                                const ScoutSectionLabel('Notes du coach'),
                                 const SizedBox(height: 12),
                                 TextField(
                                   controller: _coachNotesCtrl,
@@ -362,6 +352,7 @@ class _CoachAnalyseMatchScreenState extends State<CoachAnalyseMatchScreen> {
                     ),
                   ],
                 ),
+    ),
     );
   }
 }
@@ -414,24 +405,6 @@ class _MatchItem {
 
 // ─── UI pieces ───────────────────────────────────────────────────────────────
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    context.watch<ThemeProvider>();
-    return Text(
-      text,
-      style: TextStyle(
-        color: OdinColors.textPrimary,
-        fontSize: 13,
-        fontWeight: FontWeight.w800,
-      ),
-    );
-  }
-}
-
 class _StickySaveBar extends StatelessWidget {
   const _StickySaveBar({required this.saving, required this.onSave});
 
@@ -441,11 +414,10 @@ class _StickySaveBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
-    final bottom = MediaQuery.of(context).padding.bottom;
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottom),
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + AppSpacing.fabLift(context)),
       decoration: BoxDecoration(
-        color: OdinColors.canvas2,
+        color: OdinColors.panelSolid,
         border: Border(
           top: BorderSide(color: OdinColors.panelBorder),
         ),
@@ -456,7 +428,7 @@ class _StickySaveBar extends StatelessWidget {
           onPressed: saving ? null : onSave,
           style: ElevatedButton.styleFrom(
             backgroundColor: OdinColors.accent,
-            foregroundColor: OdinColors.textPrimary,
+            foregroundColor: Colors.white,
             disabledBackgroundColor:
                 OdinColors.accent.withValues(alpha: 0.45),
             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -495,60 +467,57 @@ class _MatchCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      decoration: BoxDecoration(
-        color: OdinColors.inputFill,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: OdinColors.panelBorder),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: onPrev,
-            icon: Icon(
-              Icons.chevron_left,
-              color: onPrev == null
-                  ? OdinColors.panelBorder.withValues(alpha: 1.5)
-                  : OdinColors.accent,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Row(
+          children: [
+            IconButton(
+              onPressed: onPrev,
+              icon: Icon(
+                Icons.chevron_left,
+                color: onPrev == null
+                    ? OdinColors.panelBorder.withValues(alpha: 1.5)
+                    : OdinColors.accent,
+              ),
             ),
-          ),
-          Expanded(
-            child: Column(
-              children: [
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: OdinColors.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+            Expanded(
+              child: Column(
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: OdinColors.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${index + 1} / $total',
-                  style: TextStyle(
-                    color: OdinColors.textMuted,
-                    fontSize: 10,
+                  const SizedBox(height: 2),
+                  Text(
+                    '${index + 1} / $total',
+                    style: TextStyle(
+                      color: OdinColors.textMuted,
+                      fontSize: 10,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          IconButton(
-            onPressed: onNext,
-            icon: Icon(
-              Icons.chevron_right,
-              color: onNext == null
-                  ? OdinColors.panelBorder.withValues(alpha: 1.5)
-                  : OdinColors.accent,
+            IconButton(
+              onPressed: onNext,
+              icon: Icon(
+                Icons.chevron_right,
+                color: onNext == null
+                    ? OdinColors.panelBorder.withValues(alpha: 1.5)
+                    : OdinColors.accent,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -568,20 +537,11 @@ class _MatchHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: OdinColors.inputFill,
-          border: Border(
-            left: BorderSide(color: resultColor, width: 3),
-            top: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-            right: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-            bottom: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-          ),
-        ),
-        child: Column(
+    return GlassCard(
+      raised: true,
+      accentColor: resultColor,
+      padding: const EdgeInsets.all(16),
+      child: Column(
           children: [
             Text(
               '$club  vs  ${match.opponent}',
@@ -644,7 +604,6 @@ class _MatchHeader extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }
@@ -763,20 +722,11 @@ class _StatStepperTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
-        decoration: BoxDecoration(
-          color: OdinColors.inputFill,
-          border: Border(
-            left: BorderSide(color: color, width: 3),
-            top: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-            right: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-            bottom: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-          ),
-        ),
-        child: Column(
+    return GlassCard(
+      raised: true,
+      accentColor: color,
+      padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -819,7 +769,6 @@ class _StatStepperTile extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }
@@ -878,20 +827,11 @@ class _TeamRatingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-        decoration: BoxDecoration(
-          color: OdinColors.inputFill,
-          border: Border(
-            left: const BorderSide(color: OdinColors.accent, width: 3),
-            top: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-            right: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-            bottom: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-          ),
-        ),
-        child: Column(
+    return GlassCard(
+      raised: true,
+      accentColor: OdinColors.accent,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      child: Column(
           children: [
             Row(
               children: [
@@ -929,7 +869,6 @@ class _TeamRatingCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }
@@ -982,20 +921,10 @@ class _PlayerNoteRow extends StatelessWidget {
   Widget build(BuildContext context) {
     context.watch<ThemeProvider>();
     final color = _color;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-        decoration: BoxDecoration(
-          color: OdinColors.glassPanel,
-          border: Border(
-            left: BorderSide(color: color, width: 3),
-            top: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-            right: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-            bottom: BorderSide(color: OdinColors.panelBorder.withValues(alpha: 0.5)),
-          ),
-        ),
-        child: Column(
+    return GlassCard(
+      accentColor: color,
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -1125,7 +1054,6 @@ class _PlayerNoteRow extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }

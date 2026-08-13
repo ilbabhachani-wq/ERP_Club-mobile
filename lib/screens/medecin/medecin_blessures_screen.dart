@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../providers/medecin_provider.dart';
-import '../../models/medecin_models.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/theme/odin_colors.dart';
+import '../../core/widgets/odin_form_sheet.dart';
+import '../../core/widgets/odin_widgets.dart';
+import '../../core/widgets/scout_widgets.dart';
+import '../../models/medecin_models.dart';
+import '../../providers/medecin_provider.dart';
 
 class MedecinBlessuresScreen extends StatefulWidget {
   const MedecinBlessuresScreen({super.key});
@@ -91,31 +95,11 @@ class _MedecinBlessuresScreenState
       .where((i) => i.riskIA >= 7)
       .length;
 
-    return Scaffold(
-      backgroundColor: OdinColors.canvas,
-      appBar: AppBar(
-        backgroundColor: OdinColors.canvas2,
-        elevation: 0,
-        title: Text(
-          'Blessures',
-          style: TextStyle(
-            color: OdinColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () =>
-              _showAddInjurySheet(context, prov),
-            icon: const Icon(
-              Icons.add,
-              color: Color(0xFFFF7A00),
-            ),
-          ),
-        ],
-      ),
-      body: prov.loading
+    return OdinBackdrop(
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: prov.loading
         ? const _LoadingWidget()
         : prov.error != null
         ? _ErrorWidget(
@@ -138,41 +122,44 @@ class _MedecinBlessuresScreenState
               // KPIs
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.page, 8, AppSpacing.page, 0),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const ScoutSectionLabel('Blessures'),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           _KpiCard(
                             label: 'Total',
                             value: '$totalCas',
-                            color:
-                              const Color(0xFF3B82F6),
+                            color: AppColors.info,
+                            icon: Icons.healing_rounded,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           _KpiCard(
                             label: 'Actives',
                             value: '$casActifs',
-                            color:
-                              const Color(0xFFEF4444),
+                            color: AppColors.danger,
+                            icon: Icons.warning_amber_rounded,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
                           _KpiCard(
                             label: 'Rééducation',
                             value: '$enReeducation',
-                            color:
-                              const Color(0xFFF59E0B),
+                            color: AppColors.warning,
+                            icon: Icons.fitness_center_rounded,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           _KpiCard(
                             label: 'Risque élevé',
                             value: '$highRisk',
-                            color:
-                              const Color(0xFF8B5CF6),
+                            color: const Color(0xFF8B5CF6),
+                            icon: Icons.monitor_heart_rounded,
                           ),
                         ],
                       ),
@@ -187,10 +174,7 @@ class _MedecinBlessuresScreenState
                   height: 40,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    padding:
-                      const EdgeInsets.symmetric(
-                        horizontal: 12
-                      ),
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.page, 12, AppSpacing.page, 0),
                     itemCount: _filters.length,
                     separatorBuilder: (_, _) =>
                       const SizedBox(width: 8),
@@ -209,17 +193,22 @@ class _MedecinBlessuresScreenState
                             ),
                           decoration: BoxDecoration(
                             color: active
-                              ? const Color(0xFFFF7A00)
-                              : OdinColors.panelBorder.withValues(alpha: 0.5),
+                              ? OdinColors.accent
+                              : OdinColors.inputFill,
                             borderRadius:
                               BorderRadius.circular(99),
+                            border: Border.all(
+                              color: active
+                                ? OdinColors.accent
+                                : OdinColors.panelBorder,
+                            ),
                           ),
                           child: Text(
                             f,
                             style: TextStyle(
                               color: active
-                                ? OdinColors.textPrimary
-                                : OdinColors.textSecondary.withValues(alpha: 0.7),
+                                ? Colors.white
+                                : OdinColors.textSecondary,
                               fontSize: 12,
                               fontWeight: active
                                 ? FontWeight.w700
@@ -279,7 +268,7 @@ class _MedecinBlessuresScreenState
                         return Padding(
                           padding:
                             const EdgeInsets.fromLTRB(
-                              12, 0, 12, 6
+                              AppSpacing.page, 0, AppSpacing.page, 8
                             ),
                           child: GestureDetector(
                             onTap: () => setState(
@@ -302,10 +291,23 @@ class _MedecinBlessuresScreenState
                   ),
 
               const SliverToBoxAdapter(
-                child: SizedBox(height: 32)
+                child: SizedBox(height: AppSpacing.bottomNav)
               ),
             ],
           ),
+          ),
+          if (_selected == null)
+            Positioned(
+              right: 16,
+              bottom: AppSpacing.fabBottom(context),
+              child: FloatingActionButton(
+                backgroundColor: OdinColors.accent,
+                onPressed: () => _showAddInjurySheet(context, prov),
+                child: const Icon(Icons.add_rounded, color: Colors.white),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -351,48 +353,14 @@ class _MedecinBlessuresScreenState
       'Pied droit',
     ];
 
-    showModalBottomSheet(
+    showOdinFormSheet<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: OdinColors.canvas2,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
-        ),
-      ),
+      title: 'Enregistrer une blessure',
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheet) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-            left: 20,
-            right: 20,
-            top: 20,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
+        builder: (ctx, setSheet) => Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: OdinColors.panelBorder,
-                      borderRadius: BorderRadius.circular(99),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Enregistrer une blessure',
-                  style: TextStyle(
-                    color: OdinColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 20),
                 const _DropdownLabel(label: 'JOUEUR'),
                 const SizedBox(height: 6),
                 Container(
@@ -698,11 +666,8 @@ class _MedecinBlessuresScreenState
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
               ],
             ),
-          ),
-        ),
       ),
     );
   }
@@ -757,36 +722,16 @@ class _InjuryRow extends StatelessWidget {
             )
         : '?';
 
-    return SizedBox(
-      height: 56,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10, vertical: 8,
-          ),
-          decoration: BoxDecoration(
-            color: OdinColors.glassPanel,
-            border: Border(
-              left: BorderSide(color: statusColor, width: 3),
-              top: BorderSide(
-                color: OdinColors.panelBorder.withValues(alpha: 0.5),
-              ),
-              right: BorderSide(
-                color: OdinColors.panelBorder.withValues(alpha: 0.5),
-              ),
-              bottom: BorderSide(
-                color: OdinColors.panelBorder.withValues(alpha: 0.5),
-              ),
-            ),
-          ),
-          child: Row(
+    return GlassCard(
+      accentColor: statusColor,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Row(
             children: [
               Container(
-                width: 32, height: 32,
+                width: 40, height: 40,
                 decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
+                  color: statusColor.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -808,11 +753,11 @@ class _InjuryRow extends StatelessWidget {
                       injury.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: OdinColors.textPrimary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    style: TextStyle(
+                      color: OdinColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
                     ),
                     Text(
                       '${injury.injury} · ${injury.bodyPart}',
@@ -845,14 +790,12 @@ class _InjuryRow extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Icon(
-                Icons.chevron_right,
-                color: OdinColors.textMuted.withValues(alpha: 0.4),
-                size: 18,
+                Icons.chevron_right_rounded,
+                color: OdinColors.textMuted,
+                size: 20,
               ),
             ],
           ),
-        ),
-      ),
     );
   }
 }
@@ -1194,58 +1137,57 @@ class _KpiCard extends StatelessWidget {
     required this.label,
     required this.value,
     required this.color,
+    required this.icon,
   });
   final String label;
   final String value;
   final Color color;
+  final IconData icon;
 
   @override
-  Widget build(BuildContext context) =>
-    Expanded(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          border: Border(
-            left: BorderSide(color: color, width: 3),
-            top: BorderSide(
-              color: color.withValues(alpha: 0.20)
-            ),
-            right: BorderSide(
-              color: color.withValues(alpha: 0.20)
-            ),
-            bottom: BorderSide(
-              color: color.withValues(alpha: 0.20)
+  Widget build(BuildContext context) => Expanded(
+        child: SizedBox(
+          height: 112,
+          child: GlassCard(
+            raised: true,
+            accentColor: color,
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: color, size: 18),
+                ),
+                const Spacer(),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: AppColors.text,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: AppColors.muted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        child: Column(
-          crossAxisAlignment:
-            CrossAxisAlignment.start,
-          children: [
-            Text(
-              value,
-              style: TextStyle(
-                color: color,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: OdinColors.textSecondary,
-                fontSize: 10,
-              ),
-            ),
-          ],
-        ),
-      ),
-      ),
-    );
+      );
 }
 
 class _DetailStat extends StatelessWidget {
@@ -1311,7 +1253,7 @@ class _LoadingWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           CircularProgressIndicator(
-            color: Color(0xFFFF7A00), strokeWidth: 2
+            color: OdinColors.accent, strokeWidth: 2
           ),
           SizedBox(height: 12),
           Text(
@@ -1357,7 +1299,7 @@ class _ErrorWidget extends StatelessWidget {
             child: const Text(
               'Réessayer',
               style: TextStyle(
-                color: Color(0xFFFF7A00)
+                color: OdinColors.accent
               ),
             ),
           ),

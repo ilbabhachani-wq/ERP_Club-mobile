@@ -67,6 +67,7 @@ class _PrepProgrammesScreenState extends State<PrepProgrammesScreen> {
 
     await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: AppColors.card,
       shape: const RoundedRectangleBorder(
